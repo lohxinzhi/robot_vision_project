@@ -1,0 +1,8 @@
+# Install into a separate Python 3.11 environment.
+# Original Windows CPU run: Python 3.11.18, torch 2.15.0+cpu.
+# Install compatible CPU PyTorch first using the instructions in README.
+numpy
+opencv-python
+matplotlib
+scikit-learn
+ipykernel
