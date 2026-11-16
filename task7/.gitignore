@@ -1,0 +1,11 @@
+# Generated Python/Jupyter files
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.venv/
+.env
+# Instructor-provided dataset is deliberately not shipped in this module
+dataset_2026/
+# Local caches and editor files
+.cache/
+.vscode/

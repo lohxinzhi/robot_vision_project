@@ -1,0 +1,11 @@
+Position,True Label,Your Task 6,Teammate Task 6,Your Correct,Teammate Correct
+1,H,H,H,True,True
+2,D,D,D,True,True
+3,4,4,4,True,True
+4,4,4,4,True,True
+5,7,7,7,True,True
+6,8,8,8,True,True
+7,0,D,0,False,True
+8,A,A,A,True,True
+9,0,D,D,False,False
+10,0,0,D,True,False

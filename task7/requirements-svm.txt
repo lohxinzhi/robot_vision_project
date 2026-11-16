@@ -1,0 +1,10 @@
+# Install into an independent Python 3.11 environment.
+# Original Windows run: Python 3.11.16, NumPy 2.4.6, OpenCV 5.0.0,
+# scikit-learn 1.9.1. Exact versions of other libraries were not recorded.
+numpy
+opencv-python
+matplotlib
+scikit-learn
+scikit-image
+joblib
+ipykernel

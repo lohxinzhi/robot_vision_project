@@ -1,0 +1,5 @@
+Pipeline,Reference,Prediction,Correct,Total,Accuracy (%)
+SVM + Your Task 6,HD44780A00,HD4478DAD0,8,10,80.0
+SVM + Teammate Task 6,HD44780A00,HD44780ADD,8,10,80.0
+CNN + Your Task 6,HD44780A00,H044780A00,9,10,90.0
+CNN + Teammate Task 6,HD44780A00,HD44780A00,10,10,100.0
