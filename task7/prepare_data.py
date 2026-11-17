@@ -2,7 +2,6 @@
 import argparse
 from collections import Counter, defaultdict
 import csv
-import hashlib
 import json
 from pathlib import Path
 import platform
@@ -20,24 +19,25 @@ IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 
 def preprocess_character(image, mode="pad", size=32):
     """Return float32 pixels in [0, 1], with bright character foreground."""
-    if mode not in ("resize", "pad"):
-        raise ValueError("mode must be resize or pad")
+    if mode not in ("resize", "pad", "stretch"):
+        raise ValueError("mode must be resize, pad or stretch")
     if size < 1:
         raise ValueError("size must be positive")
     foreground = 255 - np.asarray(image.convert("L"), dtype=np.uint8)
-    if mode == "pad":
+    if mode in ("pad", "stretch"):
         rows, columns = np.nonzero(foreground > 51)
         if len(rows) == 0:
             return np.zeros((size, size), dtype=np.float32)
         foreground = foreground[rows.min():rows.max() + 1,
                                 columns.min():columns.max() + 1]
-        side = max(foreground.shape)
-        margin = max(2, round(side * 0.12))
-        canvas = np.zeros((side + 2 * margin, side + 2 * margin), dtype=np.uint8)
-        top = (len(canvas) - foreground.shape[0]) // 2
-        left = (len(canvas) - foreground.shape[1]) // 2
-        canvas[top:top + foreground.shape[0], left:left + foreground.shape[1]] = foreground
-        foreground = canvas
+        if mode == "pad":
+            side = max(foreground.shape)
+            margin = max(2, round(side * 0.12))
+            canvas = np.zeros((side + 2 * margin, side + 2 * margin), dtype=np.uint8)
+            top = (len(canvas) - foreground.shape[0]) // 2
+            left = (len(canvas) - foreground.shape[1]) // 2
+            canvas[top:top + foreground.shape[0], left:left + foreground.shape[1]] = foreground
+            foreground = canvas
     resized = Image.fromarray(foreground).resize((size, size), Image.Resampling.BILINEAR)
     return np.asarray(resized, dtype=np.float32) / 255.0
 
@@ -60,12 +60,10 @@ def inventory_images(data_root):
             with Image.open(path) as source:
                 gray = source.convert("L")
                 sizes[f"{gray.width}x{gray.height}"] += 1
-                content = f"L:{gray.width}x{gray.height}:".encode() + gray.tobytes()
-            digest = hashlib.sha256(content).hexdigest()
-            record = {"path": path.relative_to(data_root).as_posix(),
-                      "label": folder.name, "pixel_sha256": digest}
+                content = (gray.size, gray.tobytes())
+            record = {"path": path.relative_to(data_root).as_posix(), "label": folder.name}
             records.append(record)
-            groups[digest].append(record)
+            groups[content].append(record)
     if not records:
         raise ValueError("No character images found in class subfolders")
     for group in groups.values():
@@ -113,9 +111,9 @@ def assign_partitions(groups, classes, seed):
 
 
 def export_preview(records, classes, data_root, output):
-    """Show two training examples per class under both normalization choices."""
-    figure, axes = plt.subplots(len(classes), 6, figsize=(12, len(classes) * 1.9), squeeze=False)
-    titles = ["Original", "Resize 32x32", "Crop + pad 32x32"] * 2
+    """Show two training examples per class under all preprocessing choices."""
+    figure, axes = plt.subplots(len(classes), 8, figsize=(15, len(classes) * 1.9), squeeze=False)
+    titles = ["Original", "Resize 32x32", "Crop + pad 32x32", "Crop + stretch 32x32"] * 2
     for row, label in enumerate(classes):
         examples = [record for record in records
                     if record["label"] == label and record["split"] == "train"][:2]
@@ -125,9 +123,10 @@ def export_preview(records, classes, data_root, output):
             with Image.open(data_root / record["path"]) as source:
                 images = [np.asarray(source.convert("L")),
                           preprocess_character(source, "resize"),
-                          preprocess_character(source, "pad")]
+                          preprocess_character(source, "pad"),
+                          preprocess_character(source, "stretch")]
             for mode_index, image in enumerate(images):
-                column = example_index * 3 + mode_index
+                column = example_index * 4 + mode_index
                 axis = axes[row, column]
                 axis.imshow(image, cmap="gray", vmin=0, vmax=255 if mode_index == 0 else 1)
                 axis.set_xticks([])
@@ -158,8 +157,6 @@ def prepare_data(data_root, output, seed=5411):
     assert cross_partition == 0
     assert sum(split_counts.values()) == len(records)
     assert len({record["path"] for record in records}) == len(records)
-    manifest_text = "\n".join(f"{record['path']},{record['label']},{record['pixel_sha256']},{record['split']}"
-                              for record in records)
     summary = {
         "seed": seed, "classes": classes, "total_images": len(records),
         "image_sizes": sizes, "split_counts": dict(split_counts),
@@ -170,16 +167,15 @@ def prepare_data(data_root, output, seed=5411):
         "cross_partition_duplicate_groups": cross_partition,
         "root_images_excluded": sorted(path.name for path in data_root.iterdir()
                                        if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES),
-        "manifest_sha256": hashlib.sha256(manifest_text.encode()).hexdigest(),
         "runtime": {"python": platform.python_version(), "numpy": np.__version__,
                     "pillow": PIL.__version__, "matplotlib": matplotlib.__version__},
         "preprocessing": {"size": [32, 32], "dtype": "float32", "range": [0, 1],
-                          "foreground": "bright", "modes": ["resize", "pad"],
+                          "foreground": "bright", "modes": ["resize", "pad", "stretch"],
                           "pad_foreground_threshold": 51, "pad_margin_fraction": 0.12},
     }
     output.mkdir(parents=True, exist_ok=True)
     with (output / "data_split.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=["path", "label", "pixel_sha256", "split"])
+        writer = csv.DictWriter(stream, fieldnames=["path", "label", "split"], lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     (output / "data_summary.json").write_text(json.dumps(summary, indent=2) + "\n")

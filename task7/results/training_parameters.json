@@ -1,19 +1,34 @@
 {
-  "seed": 5411,
-  "maximum_cnn_epochs": 20,
+  "torch": "2.13.0+cu130",
   "device": "cpu",
   "threads": 4,
-  "batch_size": 128,
-  "torch": "2.13.0+cu130",
-  "classes": [
-    "0",
-    "4",
-    "7",
-    "8",
-    "A",
-    "D",
-    "H"
-  ],
-  "test_images": 1778,
-  "final_training_images": 5334
+  "seed": 5411,
+  "trial_records": 95,
+  "selected_configurations": {
+    "cnn": {
+      "mode": "stretch",
+      "optimizer": "adam",
+      "batch_size": 32,
+      "shuffle_seed": 5411,
+      "lr": 0.003,
+      "epochs": 9,
+      "depth": 2,
+      "pool_size": 8,
+      "hidden_size": 32,
+      "dropout": 0.0,
+      "weight_decay": 0.0
+    },
+    "svm": {
+      "mode": "stretch",
+      "optimizer": "adam",
+      "batch_size": 128,
+      "shuffle_seed": 5411,
+      "lr": 0.03,
+      "epochs": 9,
+      "C": 100.0,
+      "feature": "hog",
+      "hog_cell_size": 4,
+      "loss": "squared_hinge"
+    }
+  }
 }

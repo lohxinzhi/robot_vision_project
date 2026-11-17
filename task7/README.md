@@ -1,104 +1,191 @@
-# Task 7 — CNN and HOG–SVM character recognition
+# Task 7 character recognition
 
-The implementation audits the supplied images, compares preprocessing and hyperparameters, trains a CNN and HOG–SVM, and recognizes the Task 6 character crops. Recorded experiment tables are in [results/task7_results.md](results/task7_results.md). The generated `results/task7_results.tex` is an includable LaTeX table fragment requiring `booktabs`.
+This folder implements the complete Task 7 workflow, from dataset auditing and hyperparameter comparisons to selected CNN/SVM models and chip recognition. The supplied dataset, code, trained models and experiment records are included so the folder can be copied and used independently.
 
-## Standalone folder
+## Run
 
-The complete `task7/` folder can be copied to another location. It contains the code, the supplied `dataset_2026/` dataset, chip image and saved model weights in `results/`. The dataset, trained checkpoints and recorded predictions are included in the repository. `segmentation.py` bundles the Task 6 functions used for chip recognition.
-
-Create the conda environment once from inside the copied folder.
+Create the environment from inside `task7/`.
 
 ```bash
 conda env create -f environment.yml
 conda activate robot-vision-task7
 ```
 
-For chip recognition using the included trained models, run
+Recognize the chip using the selected models.
 
 ```bash
 python recognize_chip.py
 ```
 
-To reproduce the complete experiment, run
+Run the complete experiment and regenerate its result tables.
 
 ```bash
 python prepare_data.py
-python train.py --epochs 20
-python recognize_chip.py
+python train.py
+```
+
+`train.py` runs the search defined in `search_space.json`, selects the best configuration for each method using seed 5411, refits the selected CNN and SVM on the full development partition, evaluates them and exports the reports. Completed trials are reused. Default paths are relative to the Python files, so scripts can also be invoked by absolute path from another working directory.
+
+## Selected models and results
+
+<!-- results:start -->
+The registry contains **95 trial records**, including 1 numerically failed trial(s).
+
+| Selected model | Validation accuracy | Test accuracy | Macro F1 | Parameters |
+|---|---:|---:|---:|---:|
+| CNN | 99.91% | 99.72% | 0.99719 | 70,599 |
+| SVM | 99.72% | 99.33% | 0.99324 | 12,355 |
+
+| Parameter | CNN | SVM |
+|---|---|---|
+| Representation | 2 conv layers, FC 2048→32→7 | HOG cell 4×4 |
+| Optimizer | adam | adam |
+| Learning rate | 0.003 | 0.03 |
+| Preprocessing | stretch | stretch |
+| Regularization / loss | Dropout 0.0, WD 0.0 | squared_hinge, C=100 |
+| Refit epochs | 9 | 9 |
+| Batch size | 32 | 128 |
+
+| Connectivity | CNN prediction | SVM prediction |
+|---|---|---|
+| 4 | `HD44780A00` (100.00%) | `HD44780A00` (100.00%) |
+| 8 | `HD44780A00` (100.00%) | `HD44780A00` (100.00%) |
+
+The chip reference is `HD44780A00`. Position scores describe this development image.
+
+Read the [full experiment tables](results/all_experiment_tables.md), [single-seed selection](results/validation_selection.md) and [final measurements](results/task7_results.md).
+
+Image processing uses mild filtering to locate characters and bounded grayscale-median refinement for recognition. Read the [image-processing experiments](results/chip_preprocessing_experiments.md). Those choices used feedback from this chip image with the selected classifiers held fixed.
+<!-- results:end -->
+
+The inference entry point loads `results/cnn_model.pt` and `results/svm_model.pt`. Each checkpoint includes its class order, preprocessing and architecture configuration. `results/selection.json` records the selected configurations and their single-seed validation evidence.
+
+## Data and evaluation protocol
+
+The seven supported classes are `0`, `4`, `7`, `8`, `A`, `D` and `H`. There are 7,112 supplied class images, with 1,016 images per class. Class PNGs are 128×128. The chip bitmap at the dataset root is excluded from classifier training.
+
+The fixed grouped split contains 4,270 inner-training images, 1,064 validation images and 1,778 test images. The inner-training and validation portions together form the required 75% development partition of 5,334 images. Final selected models are initialized again and fitted on all development images.
+
+Decoded grayscale dimensions and pixel bytes identify exact duplicate groups through direct equality. Whole groups stay within one partition. The split records 5,850 unique pixel arrays and zero cross-partition exact-duplicate groups. Duplicate copies retain their weight within the assigned partition. Related fonts and near-duplicate glyphs may span partitions.
+
+All search and final fitting use seed 5411. Each method selects the configuration with the highest validation accuracy, with ties resolved by fewer learned parameters and then an earlier best epoch. That best epoch determines the development-refit budget. These selection settings are recorded in `search_space.json` and `results/selection.json`.
+
+Test results and the chip example had already been observed during project development. This implementation chooses parameters using validation data and freezes the selection before final evaluation. Its reported scores cover the supplied split and one chip image.
+
+## CNN implementation
+
+`models.py` defines `CharacterCNN`. All convolutions use 3×3 kernels with padding one. The first two stages have 16 and 32 channels, ReLU and 2×2 maximum pooling. A third 64-channel convolution is configurable. Adaptive average pooling produces a 4×4 or 8×8 grid. The final convolutional channel count multiplied by the pooling area determines the fully connected input size.
+
+The hidden dense layer supports widths 32, 64 and 128. Dropout and weight decay are configurable. The final layer produces seven logits. Cross-entropy trains the network from random initialization. The search compares Adam, AdamW and SGD with momentum, together with appropriate learning-rate candidates.
+
+## Handwritten HOG and SVM implementation
+
+`hog_features()` uses NumPy gradients, unsigned orientations, nine orientation bins and interpolation between neighboring orientation bins. Overlapping 2×2-cell blocks use L2 normalization, clipping at 0.2 and renormalization. Spatial interpolation between cells is omitted. Cell sizes 8 and 4 produce 324 and 1,764 features, respectively. Flattened 1,024-dimensional pixels provide an additional feature baseline.
+
+The classifier contains seven linear one-vs-rest margin functions. The local objective implements ordinary hinge or squared-hinge loss, summed over classes and averaged over images, plus half the squared weight norm. Biases are unregularized. The search compares C values 0.1, 1, 10 and 100. HOG extraction and margin losses are implemented in this repository.
+
+SVM optimizer comparisons include Adam, SGD with momentum and LBFGS. Adam and SGD use minibatches. LBFGS uses the complete training partition, with up to ten quasi-Newton iterations and a strong-Wolfe line search per recorded outer epoch. Epoch counts therefore have optimizer-specific computational meaning, and the records also include fitting time. Numerically divergent trials are recorded as failed and excluded from selection.
+
+## Preprocessing and chip segmentation
+
+Both methods use float32, 32×32 inputs in [0, 1] with bright foreground. `resize` scales the whole image. `pad` crops inverted intensities above 51, centers the crop on a square canvas with a 12% per-side margin of at least two pixels, then resizes. `stretch` uses the same crop and directly resizes it. Bilinear interpolation is shared by these comparisons.
+
+Chip recognition uses the Task 6 filtering and handwritten two-pass connected-component functions in `segmentation.py`. The fixed ROI is `(36, 202, 912, 136)`. `chip_processing.py` applies two processing stages, with parameters stored in `chip_preprocessing.json`.
+
+1. Locate characters using a 3×3 mean filter, a 31×31 local mean with offset 2 and a 5×5 binary median filter. Label connected components, retain regions of at least 500 foreground pixels and order their bounding boxes from left to right.
+2. Prepare a smoother recognition mask from the grayscale ROI using a 13×13 grayscale median, a 3×3 mean, a 31×31 local mean with offset 2 and a 5×5 binary median. Expand each located box by two pixels, clip it to the ROI and extract the largest component within that window from the smoother mask. Both labeling stages use the requested 4-connectivity or 8-connectivity.
+
+Each extracted mask becomes a dark-on-white glyph before the checkpoint's saved normalization. The same processing parameters apply to all positions and both classifiers. The classifier scores determine each character, and the reference string `HD44780A00` then scores the predicted sequence. The original bitmap is read directly for every run.
+
+### Chip recognition comparison
+
+The comparison contains two cases using the saved CNN and SVM classifiers. Results agree under 4-connectivity and 8-connectivity.
+
+| Character input | CNN | SVM |
+|---|---|---|
+| Task 6 binary character masks, classified directly | `H044780A00` (90%) | `8D44780A00` (90%) |
+| Grayscale median filtering, local thresholding and character-window component refinement | `HD44780A00` (100%) | `HD44780A00` (100%) |
+
+The Task 6 case uses its reviewed 3×3 mean, 31×31 local mean with offset 4, 5×5 binary median and minimum component area 500. Each retained component supplies a binary glyph to the classifier. CNN misclassifies D as 0, and SVM misclassifies H as 8.
+
+Further processing uses the two-stage method described above, with grayscale median 13, local threshold offset 2 and box expansion 2. It produces a smoother binary mask inside each character window. Both classifiers correctly recognize all ten positions. The same normalization and model files are used in the two cases.
+
+The chip image supplied development feedback for these image-processing settings. The 100% score covers its ten characters. Classifier test measurements are CNN 99.72% and SVM 99.33% on the 1,778-image character test set.
+
+Run the two-case comparison using
+
+```bash
+python compare_chip_preprocessing.py
+```
+
+Run the applied recognition pipeline using
+
+```bash
+python recognize_chip.py --preprocessing chip_preprocessing.json
+```
+
+The [comparison table](results/chip_preprocessing_experiments.md) records both input cases and both connectivity definitions. JSON and CSV provide their complete predictions and component boxes. The before/after figure is `results/chip_preprocessing_comparison.png`.
+
+## Change hyperparameters
+
+Candidate values are declared in `search_space.json`. Each group contains a method, a starting configuration and parameter grids. `base: "fixed"` starts from the method defaults plus the group's fixed settings. `base: "best"` starts from the strongest recorded single-seed validation configuration for that method. Selection compares the recorded configurations across the entire registry using seed 5411.
+
+For example, the CNN optimizer group contains candidates such as
+
+```json
+{"optimizer": ["adamw"], "weight_decay": [0.0001], "lr": [0.001, 0.003]}
+```
+
+The program expands each grid into individual configuration dictionaries. Parameters flow through `training.fit()` into model construction and optimization. Every trial records its complete settings, seed, best epoch, parameter count, duration and learning history. Matching configurations and random seeds reuse their recorded results. New trials receive sequential identifiers. Each result directory represents one dataset and split, so use a fresh output directory when starting experiments with a different dataset or split.
+
+| Argument | Purpose |
+|---|---|
+| `--config` | Path to the search-space JSON |
+| `--phase search` | Execute parameter comparisons |
+| `--phase confirm` | Select the best configuration for each method |
+| `--phase final` | Refit and evaluate the confirmed pair |
+| `--group` | Run a named search group with `--phase search` |
+| `--epochs` | Default CNN search budget, 20 epochs |
+| `--data` | Dataset directory |
+| `--output` | Results and experiment-registry directory |
+
+Individual execution examples are
+
+```bash
+python train.py --phase search --group cnn_optimizers
+python train.py --phase search --group svm_optimizers
+python train.py --phase confirm
+python train.py --phase final
 python summarize_results.py
 ```
 
-The default dataset, chip image and output paths are resolved relative to the Python files. Commands can also be invoked by absolute path from another working directory. `--data`, `--image` and `--output` override the defaults when needed.
+The normal `python train.py` command executes these steps in order for all groups. A copied folder with a fresh results directory can reproduce the full search. The included records allow reviewing and resuming the completed experiment.
 
-The models run on a CPU with four threads and seed 5411. Repeating the commands overwrites the corresponding files in `results/`. Keep both `cnn_model.pt` and `svm_model.pt` in that directory when copying the trained folder. Model weights and prediction arrays are retained locally and excluded from Git through `.gitignore`. If they are absent after a Git clone, the training command recreates them.
+## Output files
 
-## Stage 1 — data preparation
+| Path | Contents |
+|---|---|
+| `results/cnn_model.pt`, `results/svm_model.pt` | Selected inference models |
+| `results/selection.json` | Selection rule, confirmed settings and trial IDs |
+| `results/study.json` | Shared trial registry and search progress |
+| `results/experiments/` | Per-trial records and supporting evaluated-model evidence |
+| `results/experiments.csv` | One row per validation trial |
+| `results/all_experiment_tables.md` | All candidate settings and validation results |
+| `results/validation_selection.md` | Single-seed selected configurations |
+| `results/classification_results.json` | Test metrics, sizes and timings |
+| `results/task7_results.md`, `results/task7_results.tex` | Summary and includable LaTeX tables |
+| `results/chip_results.json` | 4/8-connectivity predictions and boxes |
+| `chip_preprocessing.json` | Selected chip filtering and extraction parameters |
+| `results/chip_preprocessing_experiments.*` | Two chip input cases, per-connectivity results and LaTeX table |
+| `results/chip_processing_4.png`, `results/chip_processing_8.png` | Grayscale ROI, locating mask and extracted recognition masks |
+| `results/*_confusion.png`, `results/*_comparison.png` | Report figures |
 
-From inside the standalone folder, run
+The LaTeX result table requires `booktabs`. Timing measurements use a four-thread CPU, a warm-up and the median of five full-test passes. Model-only timing excludes file reading, normalization and segmentation. CNN model time includes learned feature extraction. SVM feature-plus-model timing includes the handwritten descriptor computation.
 
-```bash
-python prepare_data.py
-```
+## Sources
 
-Class labels come from image subfolders. Image files at the dataset root, including the chip bitmap, are excluded. Paths in the manifest are relative to the dataset root.
+The comparison factors incorporate the complementary CNN and preprocessing investigations in [Task 7 PR #3](https://github.com/lohxinzhi/robot_vision_project/pull/3), alongside this project's local HOG, margin-loss implementation and Task 6 segmentation. All experiments in the shared search use the same dataset manifest and implementation interfaces.
 
-The split reserves exactly 25% of each class for testing. The remaining 75% is the development portion. Twenty percent of development is used for internal validation, with rounding to an integer. Candidate models will train on the inner training portion. After validation selects parameters, the final model can be refitted on all development images.
+The project uses Python, NumPy, Pillow, Matplotlib, OpenCV and PyTorch. `environment.yml` supplies the dependencies. The course project brief and lecture materials define the task. The group should develop its own discussion from the recorded evidence and follow the assignment's rules for report authorship and assistance disclosure.
 
-Decoded grayscale pixel hashes identify identical images, including dimensions. Each duplicate group stays within one partition. The script rejects identical pixel arrays with conflicting labels. A shuffled subset-sum allocation maintains exact class counts while keeping duplicate groups together. Seed 5411 fixes the allocation.
-
-Preprocessing maps dark glyphs on a light background to bright foreground values in [0, 1]. The output is a 32×32 float32 array. The two alternatives are direct resizing and foreground cropping followed by centered square padding and resizing. Foreground cropping uses intensity above 51 after inversion. Square padding adds a 12% margin, with a minimum of two pixels. Blank inputs produce a zero image in padding mode.
-
-Generated outputs are in `results/`.
-
-- `data_split.csv` records every relative path, class, pixel hash and partition.
-- `data_summary.json` records counts, duplicate audit, parameters and runtime versions.
-- `preprocessing_examples.png` shows two inner-training examples per class under both preprocessing modes.
-
-Duplicate images remain within their assigned partition and contribute repeated observations there. Near-duplicate images and related font families may still span partitions. The preview uses training examples only.
-
-## Stage 2 — CNN
-
-`models.py` defines a network with three 3×3 convolution stages, ReLU activations, two max-pooling stages, adaptive average pooling, a 64-unit dense layer, dropout 0.25 and seven output logits. All weights start from random initialization. Adam optimizes cross-entropy with batch size 128 and weight decay 0.0001.
-
-Three candidates compare direct resizing at learning rate 0.001, crop-and-pad at 0.001, and crop-and-pad at 0.003. Each runs for up to 20 epochs. Validation accuracy selects the configuration and its earliest best epoch. A new model is then initialized and refitted on all 5,334 development images for that fixed epoch budget.
-
-## Stage 3 — HOG and linear SVM
-
-`models.py` implements unsigned HOG with nine orientation bins, interpolation between orientation bins and overlapping 2×2-cell blocks. The baseline uses 8×8 cells and 324 features. The refined model uses 4×4 cells and 1,764 features. Each block uses L2 normalization, clipping at 0.2 and renormalization. Spatial interpolation between cells is omitted.
-
-The SVM contains seven one-vs-rest linear decision functions. PyTorch optimizes a squared-hinge SVM objective with Adam, using learning rate 0.01 for up to 35 epochs. The objective is half the squared weight norm plus `C` times the mean per-image sum of squared hinge losses. Biases are unregularized. The initial comparison uses `C` values 1 and 10 under both preprocessing modes. Sequential refinement first raises `C` to 100 with 8×8 HOG cells, then retains `C=100` and uses 4×4 cells. Validation chooses the configuration and epoch, followed by a fixed-budget refit on all development images. The default training command includes these configurations.
-
-Both optimizers use PyTorch. The non-CNN classifier consists of hand-written HOG features and linear margin scores.
-
-## Stage 4 — evaluation and chip recognition
-
-The held-out set contains 1,778 images. `classification_results.json` records accuracy, macro F1, per-class precision and recall, confusion matrices, parameter count and timings. `experiments.json` stores each candidate's configuration and training history. Figures include separate confusion matrices and the CNN validation curves.
-
-`recognize_chip.py` calls the bundled Task 6 functions in `segmentation.py`. Its default grayscale crop is `(x=36, y=202, width=912, height=136)`. It uses the same 3×3 smoothing, 31×31 local mean, offset 4, 5×5 median and minimum component area 500. Both 4-connectivity and 8-connectivity are evaluated. Each connected component is rendered on a white canvas before the selected classifier preprocessing is applied.
-
-```bash
-python recognize_chip.py --image dataset_2026/Test_Image_2026.bmp --crop 36 202 912 136
-```
-
-The chip reference string is used after prediction for position scoring. The chip image also supplies feedback during SVM refinement, so its current accuracy is a development result. Check `chip_results.json` and `chip_predictions_4.png` / `chip_predictions_8.png` for the actual outputs.
-
-Timing uses warmed-up full-test batches and excludes file input, normalization and segmentation. The separate SVM HOG-plus-model timing includes HOG extraction from normalized arrays. Training and inference measurements depend on hardware and the local software environment.
-
-The current run gives CNN test accuracy 99.38% and refined HOG–SVM test accuracy 99.55%. Both classifiers predict `HD44780A00` under both connectivity settings. The baseline HOG–SVM test accuracy was 96.51% with chip prediction `H844780A00`.
-
-## Sequential refinement records
-
-`results/baseline/` retains the original run, including its weights, predictions and figures. `results/iterations/c100/` records the first trial, which improved validation accuracy while retaining the chip error. `results/iterations/c100_hog4/` records the successful second trial. The default `results/svm_model.pt` now contains the selected refined model.
-
-Read `results/refinement_comparison.md` for the recorded progression. The dataset split is identical across rounds. The successful model has 12,355 learned parameters and was refitted for eight epochs. The finer HOG descriptor requires more computation.
-
-To reproduce individual rounds from inside the standalone folder, choose fresh output names.
-
-```bash
-python refine_svm.py --name repeat_c100 --C 100 --cell-size 8 \
-  --reason "Increase C after inspecting the baseline D versus 8 error"
-python refine_svm.py --name repeat_hog4 --C 100 --cell-size 4 \
-  --reason "Refine spatial HOG after C100 retained the chip error"
-```
-
-The refinement command records validation history and chip inference in its own iteration directory. The selected second trial has a separate held-out evaluation in `results/iterations/c100_hog4/test_results.json`. The default `train.py` command reproduces the complete configuration comparison and final test evaluation.
+The complete LaTeX experiment table is `results/experiments.tex` and requires `booktabs` and `longtable`. `results/task7_results.tex` contains the selected-model comparison table and requires `booktabs`.

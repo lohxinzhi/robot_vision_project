@@ -1,0 +1,206 @@
+{
+  "name": "c100_hog4",
+  "reason": "C100 improved validation but chip D remains 8. Hold C100 and refine spatial HOG cells from 8 to 4 pixels.",
+  "config": {
+    "mode": "pad",
+    "lr": 0.01,
+    "C": 100.0,
+    "epochs": 8,
+    "hog_cell_size": 4
+  },
+  "validation_accuracy": 0.9953007518796992,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 102.87638099902686,
+      "validation_accuracy": 0.9736842105263158
+    },
+    {
+      "epoch": 2,
+      "loss": 29.784563883797066,
+      "validation_accuracy": 0.9802631578947368
+    },
+    {
+      "epoch": 3,
+      "loss": 22.07452007713586,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 4,
+      "loss": 18.992753124013717,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 5,
+      "loss": 17.66582164451724,
+      "validation_accuracy": 0.9887218045112782
+    },
+    {
+      "epoch": 6,
+      "loss": 17.140361994937656,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 7,
+      "loss": 16.768327698272063,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 8,
+      "loss": 17.07188786991307,
+      "validation_accuracy": 0.9953007518796992
+    },
+    {
+      "epoch": 9,
+      "loss": 17.627327773833443,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 10,
+      "loss": 17.22488517046533,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 11,
+      "loss": 17.33252798433326,
+      "validation_accuracy": 0.9924812030075187
+    },
+    {
+      "epoch": 12,
+      "loss": 17.257539198828525,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 13,
+      "loss": 17.00402387668154,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 14,
+      "loss": 17.388957439485143,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 15,
+      "loss": 17.570543643853146,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 16,
+      "loss": 17.899562871428227,
+      "validation_accuracy": 0.9906015037593985
+    },
+    {
+      "epoch": 17,
+      "loss": 17.577513041708453,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 18,
+      "loss": 17.54614463600677,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 19,
+      "loss": 17.7026950666441,
+      "validation_accuracy": 0.9877819548872181
+    },
+    {
+      "epoch": 20,
+      "loss": 18.572855730972467,
+      "validation_accuracy": 0.9849624060150376
+    },
+    {
+      "epoch": 21,
+      "loss": 18.171602040989896,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 22,
+      "loss": 17.705699489155755,
+      "validation_accuracy": 0.9924812030075187
+    },
+    {
+      "epoch": 23,
+      "loss": 18.01565947074801,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 24,
+      "loss": 18.75103473886673,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 25,
+      "loss": 18.782995095353495,
+      "validation_accuracy": 0.9868421052631579
+    },
+    {
+      "epoch": 26,
+      "loss": 18.967482988058265,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 27,
+      "loss": 19.299947489843436,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 28,
+      "loss": 18.782181894807124,
+      "validation_accuracy": 0.9830827067669173
+    },
+    {
+      "epoch": 29,
+      "loss": 18.822346351855813,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 30,
+      "loss": 19.32511519671045,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 31,
+      "loss": 20.25524162095939,
+      "validation_accuracy": 0.9906015037593985
+    },
+    {
+      "epoch": 32,
+      "loss": 19.131384026306296,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 33,
+      "loss": 19.72098312020581,
+      "validation_accuracy": 0.9915413533834586
+    },
+    {
+      "epoch": 34,
+      "loss": 18.131324751985716,
+      "validation_accuracy": 0.9877819548872181
+    },
+    {
+      "epoch": 35,
+      "loss": 19.083065892382585,
+      "validation_accuracy": 0.9859022556390977
+    }
+  ],
+  "search_fit_seconds": 1.0470972659968538,
+  "refit_seconds": 0.23295063700061291,
+  "test_evaluated": true,
+  "chip_predictions": {
+    "4": {
+      "prediction": "HD44780A00",
+      "preprocessing": "pad",
+      "position_accuracy": 1.0
+    },
+    "8": {
+      "prediction": "HD44780A00",
+      "preprocessing": "pad",
+      "position_accuracy": 1.0
+    }
+  },
+  "selection_note": "The chip image participates in refinement feedback. Its score is a development result.",
+  "test_accuracy": 0.9955005624296963
+}

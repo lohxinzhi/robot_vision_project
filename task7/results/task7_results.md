@@ -1,59 +1,83 @@
-# Task 7 experimental results
+# Task 7 selected models
 
-The grouped dataset split uses 7112 images, including 5334 development images and 1778 held-out test images.
+Selection uses validation accuracy with seed 5411. Ties favor fewer parameters and then an earlier best epoch.
 
-## Validation search
+| Method | Validation accuracy | Test accuracy | Macro F1 | Errors | Parameters | Refit seconds | Model ms/image |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| CNN | 99.91% | 99.72% | 0.99719 | 5 | 70599 | 8.186 | 0.07695 |
+| SVM | 99.72% | 99.33% | 0.99324 | 12 | 12355 | 0.267 | 0.00105 |
 
-| Method | Preprocessing | HOG cell | Learning rate | C | Best epoch | Validation accuracy |
-|---|---|---:|---:|---:|---:|---:|
-| CNN | resize | — | 0.001 | — | 18 | 97.74% |
-| CNN | pad | — | 0.001 | — | 19 | 98.21% |
-| CNN | pad | — | 0.003 | — | 19 | 98.87% |
-| SVM | resize | 8 | 0.01 | 1.0 | 12 | 93.98% |
-| SVM | resize | 8 | 0.01 | 10.0 | 35 | 96.05% |
-| SVM | pad | 8 | 0.01 | 1.0 | 14 | 94.64% |
-| SVM | pad | 8 | 0.01 | 10.0 | 5 | 96.52% |
-| SVM | pad | 8 | 0.01 | 100.0 | 7 | 97.93% |
-| SVM | pad | 4 | 0.01 | 100.0 | 8 | 99.53% |
+SVM feature-plus-model inference is 0.55789 ms/image. Model-only timings exclude file decoding, input normalization and segmentation. SVM model timing also excludes HOG extraction. Timings use CPU four threads, one warm-up and the median of five passes.
 
-## Held-out evaluation after full-development refit
+## Selected parameters
 
-| Method | Test accuracy | Macro F1 | Parameters | Refit seconds | Model-only ms/image |
-|---|---:|---:|---:|---:|---:|
-| CNN | 99.38% | 0.99382 | 89351 | 22.94 | 0.10678 |
-| SVM | 99.55% | 0.99550 | 12355 | 0.23 | 0.00123 |
+### CNN
 
-The model-only times are warmed-up full-test batch throughput on a four-thread CPU. File decoding, normalization and segmentation are excluded. HOG extraction is excluded from SVM model-only timing. A separate HOG-plus-model measurement is 0.55322 ms/image.
+```json
+{
+  "mode": "stretch",
+  "optimizer": "adam",
+  "batch_size": 32,
+  "shuffle_seed": 5411,
+  "lr": 0.003,
+  "epochs": 9,
+  "depth": 2,
+  "pool_size": 8,
+  "hidden_size": 32,
+  "dropout": 0.0,
+  "weight_decay": 0.0
+}
+```
 
-## Chip-image transfer
+### SVM
 
-The reference line is `HD44780A00`.
+```json
+{
+  "mode": "stretch",
+  "optimizer": "adam",
+  "batch_size": 128,
+  "shuffle_seed": 5411,
+  "lr": 0.03,
+  "epochs": 9,
+  "C": 100.0,
+  "feature": "hog",
+  "hog_cell_size": 4,
+  "loss": "squared_hinge"
+}
+```
 
-| Connectivity | Method | Predicted line | Position accuracy |
+## Chip recognition
+
+| Connectivity | Method | Prediction | Position accuracy |
 |---|---|---|---:|
 | 4 | CNN | `HD44780A00` | 100.00% |
 | 4 | SVM | `HD44780A00` | 100.00% |
 | 8 | CNN | `HD44780A00` | 100.00% |
 | 8 | SVM | `HD44780A00` | 100.00% |
 
-## Comparison
+Chip image-processing parameters were selected using the chip development image. Read [the image-processing comparisons](chip_preprocessing_experiments.md) for the baseline, bounded-refinement experiments and fixed-checkpoint evidence.
 
-On this held-out split, CNN accuracy is 99.38% and HOG–SVM accuracy is 99.55%. The CNN learns local features jointly with the classifier. HOG fixes the gradient representation before the linear classifier is fitted. Learned features provide a plausible explanation for the observed differences. The SVM refinement additionally investigates finer spatial gradient bins.
+```json
+{
+  "segmentation": {
+    "gray_median_size": 1,
+    "smooth_size": 3,
+    "background_size": 31,
+    "offset": 2,
+    "median_size": 5,
+    "min_area": 500
+  },
+  "glyph_refinement": {
+    "gray_median_size": 13,
+    "smooth_size": 3,
+    "background_size": 31,
+    "offset": 2,
+    "median_size": 5,
+    "box_margin": 2
+  }
+}
+```
 
-The SVM has fewer learned parameters and a fast linear scoring step. Its HOG computation is required on every input, so model-only timing should be read alongside the HOG-plus-model timing. CNN inference includes its learned feature extraction. Refit time excludes the earlier parameter search and feature preparation.
+The shared test partition and chip image had already been inspected during project development. Parameter selection in this search uses validation data. The final scores describe this dataset split and this chip example.
 
-The validation table isolates preprocessing by holding learning rate or C fixed. The padded CNN learning-rate comparison and each SVM C comparison show parameter sensitivity on the same split. The conclusions are limited to this search range and random seed.
-
-## Interpretation limits
-
-Model selection uses internal validation. The selected configuration is refitted on all development images for the validation-selected epoch budget. The chip image supplies feedback during sequential SVM refinement, so its position accuracy describes a development example.
-
-The SVM is a linear one-vs-rest classifier trained with a squared-hinge objective and Adam. Its HOG features are hand-written. Both methods use PyTorch tensor operations for optimization.
-
-The results use one grouped split and one random seed. Duplicate groups remain repeated within their assigned partition, and related fonts may occur across partitions. One chip image provides a small transfer example. The clean character-image test accuracy and chip position accuracy measure different conditions.
-
-The crop, local threshold settings and area cutoff for chip segmentation follow Task 6. The classifier checkpoints are selected using validation accuracy on the supplied character dataset.
-
-## Sequential SVM refinement
-
-The original run and subsequent trials are recorded in [refinement_comparison.md](refinement_comparison.md). Baseline artifacts are retained in `baseline/` and each new trial is stored in `iterations/`.
+All trials are in [all_experiment_tables.md](all_experiment_tables.md) and `experiments.csv`. Selected configurations are in [validation_selection.md](validation_selection.md).

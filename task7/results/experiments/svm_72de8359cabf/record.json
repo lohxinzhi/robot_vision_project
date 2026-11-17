@@ -1,0 +1,100 @@
+{
+  "config": {
+    "mode": "stretch",
+    "optimizer": "lbfgs",
+    "batch_size": 0,
+    "shuffle_seed": 5411,
+    "lr": 1.0,
+    "epochs": 15,
+    "C": 100.0,
+    "feature": "hog",
+    "hog_cell_size": 4,
+    "loss": "squared_hinge"
+  },
+  "best_epoch": 3,
+  "parameters": 12355,
+  "fc_input": null,
+  "validation_accuracy": 0.9943609022556391,
+  "fit_seconds": 1.723818026999652,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 21.248077392578125,
+      "validation_accuracy": 0.9840225563909775
+    },
+    {
+      "epoch": 2,
+      "loss": 12.324316024780273,
+      "validation_accuracy": 0.9906015037593985
+    },
+    {
+      "epoch": 3,
+      "loss": 11.023289680480957,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 4,
+      "loss": 10.733810424804688,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 5,
+      "loss": 10.580142974853516,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 6,
+      "loss": 10.440147399902344,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 7,
+      "loss": 10.304630279541016,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 8,
+      "loss": 10.24156379699707,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 9,
+      "loss": 10.229321479797363,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 10,
+      "loss": 10.227249145507812,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 11,
+      "loss": 10.226753234863281,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 12,
+      "loss": 10.226552963256836,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 13,
+      "loss": 10.22630500793457,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 14,
+      "loss": 10.226020812988281,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 15,
+      "loss": 10.225921630859375,
+      "validation_accuracy": 0.9943609022556391
+    }
+  ],
+  "status": "completed",
+  "id": "svm_72de8359cabf",
+  "method": "svm",
+  "seed": 5411
+}

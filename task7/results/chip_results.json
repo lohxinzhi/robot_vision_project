@@ -1,6 +1,5 @@
 {
   "image": "Test_Image_2026.bmp",
-  "image_sha256": "ef84d9103d3f4bc821ca5f729d9855ae576cb7d2fe35d894579ede547652beb5",
   "crop_xywh": [
     36,
     202,
@@ -8,100 +7,190 @@
     136
   ],
   "reference": "HD44780A00",
+  "image_processing": {
+    "segmentation": {
+      "gray_median_size": 1,
+      "smooth_size": 3,
+      "background_size": 31,
+      "offset": 2,
+      "median_size": 5,
+      "min_area": 500
+    },
+    "glyph_refinement": {
+      "gray_median_size": 13,
+      "smooth_size": 3,
+      "background_size": 31,
+      "offset": 2,
+      "median_size": 5,
+      "box_margin": 2
+    }
+  },
   "connectivity": {
     "4": {
       "character_count": 10,
       "boxes": [
         {
-          "label": 38,
-          "x": 24,
-          "y": 11,
-          "area": 3932,
-          "width": 84,
-          "height": 121
-        },
-        {
-          "label": 24,
-          "x": 116,
-          "y": 2,
-          "area": 4302,
-          "width": 87,
-          "height": 134
-        },
-        {
-          "label": 36,
-          "x": 206,
-          "y": 10,
-          "area": 3517,
-          "width": 82,
-          "height": 126
-        },
-        {
           "label": 40,
-          "x": 296,
-          "y": 12,
-          "area": 3364,
-          "width": 87,
-          "height": 116
-        },
-        {
-          "label": 14,
-          "x": 387,
-          "y": 0,
-          "area": 2756,
-          "width": 90,
-          "height": 128
-        },
-        {
-          "label": 39,
-          "x": 469,
-          "y": 11,
-          "area": 4467,
-          "width": 88,
-          "height": 117
-        },
-        {
-          "label": 34,
-          "x": 559,
-          "y": 7,
-          "area": 3973,
-          "width": 85,
-          "height": 124
-        },
-        {
-          "label": 37,
-          "x": 646,
+          "x": 23,
           "y": 10,
-          "area": 3290,
-          "width": 91,
-          "height": 117
-        },
-        {
-          "label": 31,
-          "x": 731,
-          "y": 6,
-          "area": 4086,
+          "area": 4225,
           "width": 86,
           "height": 122
         },
         {
-          "label": 30,
+          "label": 31,
+          "x": 113,
+          "y": 1,
+          "area": 4723,
+          "width": 90,
+          "height": 135
+        },
+        {
+          "label": 9,
+          "x": 206,
+          "y": 0,
+          "area": 4015,
+          "width": 83,
+          "height": 136
+        },
+        {
+          "label": 43,
+          "x": 295,
+          "y": 12,
+          "area": 3567,
+          "width": 88,
+          "height": 116
+        },
+        {
+          "label": 16,
+          "x": 387,
+          "y": 0,
+          "area": 2941,
+          "width": 91,
+          "height": 129
+        },
+        {
+          "label": 42,
+          "x": 468,
+          "y": 11,
+          "area": 4713,
+          "width": 89,
+          "height": 118
+        },
+        {
+          "label": 38,
+          "x": 559,
+          "y": 7,
+          "area": 4168,
+          "width": 86,
+          "height": 124
+        },
+        {
+          "label": 41,
+          "x": 645,
+          "y": 10,
+          "area": 3530,
+          "width": 92,
+          "height": 117
+        },
+        {
+          "label": 36,
+          "x": 730,
+          "y": 5,
+          "area": 4318,
+          "width": 88,
+          "height": 123
+        },
+        {
+          "label": 37,
           "x": 824,
           "y": 5,
-          "area": 4082,
+          "area": 4250,
           "width": 82,
           "height": 124
+        }
+      ],
+      "extraction_windows": [
+        {
+          "x": 21,
+          "y": 8,
+          "width": 90,
+          "height": 126,
+          "foreground_area": 4527
+        },
+        {
+          "x": 111,
+          "y": 0,
+          "width": 94,
+          "height": 136,
+          "foreground_area": 4638
+        },
+        {
+          "x": 204,
+          "y": 0,
+          "width": 87,
+          "height": 136,
+          "foreground_area": 3904
+        },
+        {
+          "x": 293,
+          "y": 10,
+          "width": 92,
+          "height": 120,
+          "foreground_area": 3722
+        },
+        {
+          "x": 385,
+          "y": 0,
+          "width": 95,
+          "height": 131,
+          "foreground_area": 3313
+        },
+        {
+          "x": 466,
+          "y": 9,
+          "width": 93,
+          "height": 122,
+          "foreground_area": 4909
+        },
+        {
+          "x": 557,
+          "y": 5,
+          "width": 90,
+          "height": 128,
+          "foreground_area": 4360
+        },
+        {
+          "x": 643,
+          "y": 8,
+          "width": 96,
+          "height": 121,
+          "foreground_area": 3643
+        },
+        {
+          "x": 728,
+          "y": 3,
+          "width": 92,
+          "height": 127,
+          "foreground_area": 4410
+        },
+        {
+          "x": 822,
+          "y": 3,
+          "width": 86,
+          "height": 128,
+          "foreground_area": 4368
         }
       ],
       "models": {
         "cnn": {
           "prediction": "HD44780A00",
-          "preprocessing": "pad",
+          "preprocessing": "stretch",
           "position_accuracy": 1.0
         },
         "svm": {
           "prediction": "HD44780A00",
-          "preprocessing": "pad",
+          "preprocessing": "stretch",
           "position_accuracy": 1.0
         }
       }
@@ -110,95 +199,167 @@
       "character_count": 10,
       "boxes": [
         {
-          "label": 38,
-          "x": 24,
-          "y": 11,
-          "area": 3932,
-          "width": 84,
-          "height": 121
-        },
-        {
-          "label": 24,
-          "x": 116,
-          "y": 2,
-          "area": 4302,
-          "width": 87,
-          "height": 134
-        },
-        {
-          "label": 36,
-          "x": 206,
-          "y": 10,
-          "area": 3517,
-          "width": 82,
-          "height": 126
-        },
-        {
           "label": 40,
-          "x": 296,
-          "y": 12,
-          "area": 3364,
-          "width": 87,
-          "height": 116
-        },
-        {
-          "label": 14,
-          "x": 387,
-          "y": 0,
-          "area": 2756,
-          "width": 90,
-          "height": 128
-        },
-        {
-          "label": 39,
-          "x": 469,
-          "y": 11,
-          "area": 4467,
-          "width": 88,
-          "height": 117
-        },
-        {
-          "label": 34,
-          "x": 559,
-          "y": 7,
-          "area": 3973,
-          "width": 85,
-          "height": 124
-        },
-        {
-          "label": 37,
-          "x": 646,
+          "x": 23,
           "y": 10,
-          "area": 3290,
-          "width": 91,
-          "height": 117
-        },
-        {
-          "label": 31,
-          "x": 731,
-          "y": 6,
-          "area": 4086,
+          "area": 4225,
           "width": 86,
           "height": 122
         },
         {
-          "label": 30,
+          "label": 31,
+          "x": 113,
+          "y": 1,
+          "area": 4723,
+          "width": 90,
+          "height": 135
+        },
+        {
+          "label": 9,
+          "x": 206,
+          "y": 0,
+          "area": 4037,
+          "width": 83,
+          "height": 136
+        },
+        {
+          "label": 43,
+          "x": 295,
+          "y": 12,
+          "area": 3567,
+          "width": 88,
+          "height": 116
+        },
+        {
+          "label": 16,
+          "x": 387,
+          "y": 0,
+          "area": 2941,
+          "width": 91,
+          "height": 129
+        },
+        {
+          "label": 42,
+          "x": 468,
+          "y": 11,
+          "area": 4713,
+          "width": 89,
+          "height": 118
+        },
+        {
+          "label": 38,
+          "x": 559,
+          "y": 7,
+          "area": 4168,
+          "width": 86,
+          "height": 124
+        },
+        {
+          "label": 41,
+          "x": 645,
+          "y": 10,
+          "area": 3530,
+          "width": 92,
+          "height": 117
+        },
+        {
+          "label": 36,
+          "x": 730,
+          "y": 5,
+          "area": 4318,
+          "width": 88,
+          "height": 123
+        },
+        {
+          "label": 37,
           "x": 824,
           "y": 5,
-          "area": 4082,
+          "area": 4250,
           "width": 82,
           "height": 124
+        }
+      ],
+      "extraction_windows": [
+        {
+          "x": 21,
+          "y": 8,
+          "width": 90,
+          "height": 126,
+          "foreground_area": 4527
+        },
+        {
+          "x": 111,
+          "y": 0,
+          "width": 94,
+          "height": 136,
+          "foreground_area": 4638
+        },
+        {
+          "x": 204,
+          "y": 0,
+          "width": 87,
+          "height": 136,
+          "foreground_area": 3904
+        },
+        {
+          "x": 293,
+          "y": 10,
+          "width": 92,
+          "height": 120,
+          "foreground_area": 3722
+        },
+        {
+          "x": 385,
+          "y": 0,
+          "width": 95,
+          "height": 131,
+          "foreground_area": 3313
+        },
+        {
+          "x": 466,
+          "y": 9,
+          "width": 93,
+          "height": 122,
+          "foreground_area": 4909
+        },
+        {
+          "x": 557,
+          "y": 5,
+          "width": 90,
+          "height": 128,
+          "foreground_area": 4360
+        },
+        {
+          "x": 643,
+          "y": 8,
+          "width": 96,
+          "height": 121,
+          "foreground_area": 3643
+        },
+        {
+          "x": 728,
+          "y": 3,
+          "width": 92,
+          "height": 127,
+          "foreground_area": 4410
+        },
+        {
+          "x": 822,
+          "y": 3,
+          "width": 86,
+          "height": 128,
+          "foreground_area": 4368
         }
       ],
       "models": {
         "cnn": {
           "prediction": "HD44780A00",
-          "preprocessing": "pad",
+          "preprocessing": "stretch",
           "position_accuracy": 1.0
         },
         "svm": {
           "prediction": "HD44780A00",
-          "preprocessing": "pad",
+          "preprocessing": "stretch",
           "position_accuracy": 1.0
         }
       }

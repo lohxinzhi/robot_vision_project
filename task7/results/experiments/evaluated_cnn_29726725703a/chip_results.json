@@ -1,0 +1,206 @@
+{
+  "image": "Test_Image_2026.bmp",
+  "crop_xywh": [
+    36,
+    202,
+    912,
+    136
+  ],
+  "reference": "HD44780A00",
+  "connectivity": {
+    "4": {
+      "character_count": 10,
+      "boxes": [
+        {
+          "label": 38,
+          "x": 24,
+          "y": 11,
+          "area": 3932,
+          "width": 84,
+          "height": 121
+        },
+        {
+          "label": 24,
+          "x": 116,
+          "y": 2,
+          "area": 4302,
+          "width": 87,
+          "height": 134
+        },
+        {
+          "label": 36,
+          "x": 206,
+          "y": 10,
+          "area": 3517,
+          "width": 82,
+          "height": 126
+        },
+        {
+          "label": 40,
+          "x": 296,
+          "y": 12,
+          "area": 3364,
+          "width": 87,
+          "height": 116
+        },
+        {
+          "label": 14,
+          "x": 387,
+          "y": 0,
+          "area": 2756,
+          "width": 90,
+          "height": 128
+        },
+        {
+          "label": 39,
+          "x": 469,
+          "y": 11,
+          "area": 4467,
+          "width": 88,
+          "height": 117
+        },
+        {
+          "label": 34,
+          "x": 559,
+          "y": 7,
+          "area": 3973,
+          "width": 85,
+          "height": 124
+        },
+        {
+          "label": 37,
+          "x": 646,
+          "y": 10,
+          "area": 3290,
+          "width": 91,
+          "height": 117
+        },
+        {
+          "label": 31,
+          "x": 731,
+          "y": 6,
+          "area": 4086,
+          "width": 86,
+          "height": 122
+        },
+        {
+          "label": 30,
+          "x": 824,
+          "y": 5,
+          "area": 4082,
+          "width": 82,
+          "height": 124
+        }
+      ],
+      "models": {
+        "cnn": {
+          "prediction": "HD44780A00",
+          "preprocessing": "stretch",
+          "position_accuracy": 1.0
+        },
+        "svm": {
+          "prediction": "HD44780A00",
+          "preprocessing": "stretch",
+          "position_accuracy": 1.0
+        }
+      }
+    },
+    "8": {
+      "character_count": 10,
+      "boxes": [
+        {
+          "label": 38,
+          "x": 24,
+          "y": 11,
+          "area": 3932,
+          "width": 84,
+          "height": 121
+        },
+        {
+          "label": 24,
+          "x": 116,
+          "y": 2,
+          "area": 4302,
+          "width": 87,
+          "height": 134
+        },
+        {
+          "label": 36,
+          "x": 206,
+          "y": 10,
+          "area": 3517,
+          "width": 82,
+          "height": 126
+        },
+        {
+          "label": 40,
+          "x": 296,
+          "y": 12,
+          "area": 3364,
+          "width": 87,
+          "height": 116
+        },
+        {
+          "label": 14,
+          "x": 387,
+          "y": 0,
+          "area": 2756,
+          "width": 90,
+          "height": 128
+        },
+        {
+          "label": 39,
+          "x": 469,
+          "y": 11,
+          "area": 4467,
+          "width": 88,
+          "height": 117
+        },
+        {
+          "label": 34,
+          "x": 559,
+          "y": 7,
+          "area": 3973,
+          "width": 85,
+          "height": 124
+        },
+        {
+          "label": 37,
+          "x": 646,
+          "y": 10,
+          "area": 3290,
+          "width": 91,
+          "height": 117
+        },
+        {
+          "label": 31,
+          "x": 731,
+          "y": 6,
+          "area": 4086,
+          "width": 86,
+          "height": 122
+        },
+        {
+          "label": 30,
+          "x": 824,
+          "y": 5,
+          "area": 4082,
+          "width": 82,
+          "height": 124
+        }
+      ],
+      "models": {
+        "cnn": {
+          "prediction": "HD44780A00",
+          "preprocessing": "stretch",
+          "position_accuracy": 1.0
+        },
+        "svm": {
+          "prediction": "HD44780A00",
+          "preprocessing": "stretch",
+          "position_accuracy": 1.0
+        }
+      }
+    }
+  }
+}

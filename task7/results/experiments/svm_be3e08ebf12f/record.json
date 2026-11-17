@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "stretch",
+    "optimizer": "sgd",
+    "batch_size": 128,
+    "shuffle_seed": 5411,
+    "lr": 0.01,
+    "epochs": 35,
+    "C": 100.0,
+    "feature": "hog",
+    "hog_cell_size": 4,
+    "loss": "squared_hinge",
+    "momentum": 0.9
+  },
+  "status": "failed",
+  "reason": "Non-finite training loss at epoch 1",
+  "validation_accuracy": null,
+  "parameters": null,
+  "fc_input": null,
+  "best_epoch": null,
+  "fit_seconds": null,
+  "history": [],
+  "id": "svm_be3e08ebf12f",
+  "method": "svm",
+  "seed": 5411
+}

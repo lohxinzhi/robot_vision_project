@@ -1,0 +1,43 @@
+{
+  "seed": 5411,
+  "criterion": "validation accuracy, fewer parameters, earliest best epoch",
+  "models": {
+    "cnn": {
+      "trial_id": "cnn_dc3fb6759ac8",
+      "config": {
+        "mode": "stretch",
+        "optimizer": "adam",
+        "batch_size": 32,
+        "shuffle_seed": 5411,
+        "lr": 0.003,
+        "epochs": 20,
+        "depth": 2,
+        "pool_size": 8,
+        "hidden_size": 32,
+        "dropout": 0.0,
+        "weight_decay": 0.0
+      },
+      "validation_accuracy": 0.9990601503759399,
+      "parameters": 70599,
+      "refit_epochs": 9
+    },
+    "svm": {
+      "trial_id": "svm_2d7a5ae2d050",
+      "config": {
+        "mode": "stretch",
+        "optimizer": "adam",
+        "batch_size": 128,
+        "shuffle_seed": 5411,
+        "lr": 0.03,
+        "epochs": 35,
+        "C": 100.0,
+        "feature": "hog",
+        "hog_cell_size": 4,
+        "loss": "squared_hinge"
+      },
+      "validation_accuracy": 0.9971804511278195,
+      "parameters": 12355,
+      "refit_epochs": 9
+    }
+  }
+}

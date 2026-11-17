@@ -1,0 +1,23 @@
+\topic{Acknowledgments, sources and provenance}
+The course supplies the \textit{ME5411 Robot Vision and AI Group Project, AY2026/27} brief and the lecture export. Course references used for the image-processing methods include Chapter 3, Image Preprocessing Part 2, pp. 26 and 31--34, and Chapter 4, Segmentation Part 1, pp. 16, 31--34 and 39--40. These page references have been checked against the supplied PDF export.
+
+Tasks 1--4 build on Xin Zhi's repository, \url{https://github.com/lohxinzhi/robot_vision_project}. Tasks 5--6 and Task 7 extend that project. The unified Task 7 study incorporates comparison factors from both group contributions, including CNN depth, fully connected input, regularization, preprocessing and classifier feature choices. The corresponding source pull requests are
+\begin{itemize}
+\item \url{https://github.com/lohxinzhi/robot_vision_project/pull/2}.
+\item \url{https://github.com/lohxinzhi/robot_vision_project/pull/3}.
+\end{itemize}
+
+The project implements the connected-component algorithm, HOG accumulation, margin objectives and model definitions locally. OpenCV supplies image decoding and selected filters and intensity transformations. NumPy supplies arrays and numerical operations, Pillow supplies image resizing, PyTorch supplies automatic differentiation and optimizers, and Matplotlib supplies figures.
+\begin{itemize}
+\item PyTorch, \url{https://pytorch.org/}.
+\item OpenCV, \url{https://opencv.org/}.
+\item NumPy, \url{https://numpy.org/}.
+\item Pillow, \url{https://python-pillow.github.io/}.
+\item Matplotlib, \url{https://matplotlib.org/}.
+\item Tectonic, \url{https://tectonic-typesetting.github.io/}.
+\end{itemize}
+
+Saved Tasks 1--6 figures come from \path{task1-6/tasks.ipynb}. The Task 7 tables and figures come from \path{task7/results/}. Classifier selection is recorded in \texttt{study.json}, \texttt{selection.json} and \texttt{validation\_selection.md}. Test measurements are in \texttt{classification\_results.json}. Chip extraction and inference are in \texttt{chip\_results.json} and \texttt{chip\_preprocessing\_experiments.json}.
+
+The appendix reproduces all 95 classifier trial records. A numerically failed trial retains its settings and failure status. The chip-processing table compares the two character-input cases under both connectivity definitions.
+\review{Add any further sources actually used by the group and finalize the acknowledgments and assistance disclosure required by the assignment.}

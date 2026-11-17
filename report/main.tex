@@ -1,0 +1,92 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\usepackage{amsmath,amssymb,graphicx,booktabs,tabularx,longtable,float,hyperref,tikz,fancyhdr}
+\usetikzlibrary{positioning,arrows.meta}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{ME5411 Robot Vision and AI}
+\fancyhead[R]{Group 33 -- Draft}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\linespread{1.0}
+\emergencystretch=3em
+\newcommand{\review}[1]{\begin{quote}\textbf{Group review required.} #1\end{quote}}
+\newcommand{\fig}[3]{\begin{figure}[H]\centering\includegraphics[width=\linewidth,height=#2\textheight,keepaspectratio]{figures/#1.png}\caption{#3}\end{figure}}
+\newcommand{\topic}[1]{\clearpage\section{#1}}
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}\centering
+\vspace*{18mm}
+{\Large National University of Singapore\par}
+\vspace{8mm}{\Large ME5411 Robot Vision and AI\par}
+\vspace{16mm}{\LARGE Character Recognition on a Microchip\par}
+\vspace{6mm}{\large Image Processing, CNN and HOG--SVM\par}
+\vspace{14mm}{\Large Group 33\par}
+\vspace{8mm}
+\begin{tabular}{ll}\toprule Member name & Student number\\\midrule
+{[Full name]} & {[Student number]}\\
+{[Full name]} & {[Student number]}\\
+{[Full name]} & {[Student number]}\\\bottomrule\end{tabular}
+\vfill
+\textbf{Report draft for group review}\par
+Methods and recorded experimental evidence, with discussion prompts.\par
+Prepared 17 November 2026\par
+Submission deadline 20 November 2026, 23:59 Singapore time.
+\end{titlepage}
+\hypersetup{pageanchor=true}
+\begingroup
+\setlength{\parskip}{0pt}
+\makeatletter
+\renewcommand{\l@section}{\@dottedtocline{1}{0em}{2.5em}}
+\makeatother
+\tableofcontents
+\endgroup
+\topic{Draft status and introduction}
+The project investigates image processing and character classification for a microchip label. Tasks 1--6 cover contrast adjustment, smoothing, cropping, binarization, boundary extraction and connected-component segmentation. Task 7 compares a convolutional neural network (CNN) with a histogram-of-oriented-gradients (HOG) and support-vector-machine (SVM) classifier.
+
+The supplied bitmap is \path{task7/dataset_2026/Test_Image_2026.bmp}. The user identified it as the assignment's \texttt{charact2.bmp}. It has 990 columns and 367 rows. The requested line is \texttt{HD44780A00}. The supplied training vocabulary contains the seven classes 0, 4, 7, 8, A, D and H.
+
+This draft describes the current repository and transcribes its saved results. Task 1--6 illustrations are exported from saved outputs in \path{task1-6/tasks.ipynb}. Task 7 figures and measurements come from \path{task7/results/}.
+
+The assignment permits LLM use for language editing and requires ideas, analysis and reasoning to originate from the group. This draft was assembled with AI assistance. The group must verify the technical account, supply its own interpretation in the marked discussion areas, and check permitted use before submission. Statements identified as notebook observations reproduce existing project observations.
+
+The group number follows the notebook's Group 33 heading. Member details remain to be completed. The document uses 11-point Arial and single spacing. The assignment specifies a maximum of 50 pages and describes 30--40 pages as typical. This draft prioritizes the available evidence and still requires the group's discussion.
+\review{Confirm member details, the course coverage of the selected SVM method, and the final report wording.}
+\topic{Implementation map and overall flow}
+\begin{tabularx}{\linewidth}{@{}lX@{}}\toprule
+Requirement & Current implementation\\\midrule
+Tasks 1--4 & \path{task1-6/tasks.ipynb}, functions in \texttt{preprocessing.py}\\
+Task 5 & \texttt{character\_outlines}, inner morphological boundary\\
+Task 6 & \texttt{prepare\_character\_binary}, \texttt{connected\_components}\\
+Task 7-1 & \texttt{task7/models.py}, \texttt{task7/train.py}\\
+Task 7-2 & HOG and linear squared-hinge SVM in the same modules\\
+Task 7-3 & Recorded metrics, figures and \texttt{summarize\_results.py}\\\bottomrule
+\end{tabularx}
+\begin{center}\begin{tikzpicture}[node distance=5mm,every node/.style={draw,rounded corners,align=center,text width=11cm,minimum height=8mm},>=Stealth]
+\node (a) {Read bitmap and convert to grayscale};
+\node[below=of a] (b) {Contrast and smoothing experiments (Tasks 1--2)};
+\node[below=of b] (c) {Crop requested line (Task 3)};
+\node[below=of c] (d) {Global threshold and cross median (Task 4)};
+\node[below=of d] (e) {Inner outline from Task 4 binary (Task 5)};
+\node[below=of e] (f) {Grayscale crop: local threshold and median (Task 6)};
+\node[below=of f] (g) {Two-pass labeling, area filter and bounding boxes, 4/8 connectivity};
+\node[below=of g] (h) {Task 7: expand windows and refine recognition masks};
+\node[below=of h] (i) {Normalize glyphs; apply selected CNN and HOG--SVM};
+\foreach \x/\y in {a/b,b/c,c/d,d/e,f/g,g/h,h/i}\draw[->](\x)--(\y);
+\draw[->] (c.east) -- ++(0.6,0) |- (f.east);
+\end{tikzpicture}\end{center}
+Task 6 starts from the Task 3 grayscale crop. Its binary preparation is distinct from the Task 4 input used for outlines. Task 7 bundles the relevant Task 6 functions in \texttt{segmentation.py} and adds bounded mask refinement in \texttt{chip\_processing.py}. Its dataset and selected models are included for independent use.
+\input{sections/task1-6}
+\input{sections/task7}
+\input{sections/discussion}
+\input{sections/running}
+\input{sections/references}
+\appendix
+\clearpage
+\input{tables/all_experiments}
+\end{document}

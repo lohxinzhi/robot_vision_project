@@ -1,0 +1,5 @@
+case,connectivity,count,cnn,cnn_accuracy,svm,svm_accuracy
+task6_binary,4,10,H044780A00,0.9,8D44780A00,0.9
+task6_binary,8,10,H044780A00,0.9,8D44780A00,0.9
+refined,4,10,HD44780A00,1.0,HD44780A00,1.0
+refined,8,10,HD44780A00,1.0,HD44780A00,1.0

@@ -1,0 +1,252 @@
+{
+  "seed": 5411,
+  "groups": [
+    {
+      "name": "cnn_baselines",
+      "method": "cnn",
+      "base": "fixed",
+      "fixed": {
+        "depth": 3,
+        "pool_size": 4,
+        "dropout": 0.25,
+        "weight_decay": 0.0001,
+        "batch_size": 128
+      },
+      "grids": [
+        {
+          "mode": [
+            "resize",
+            "pad"
+          ],
+          "lr": [
+            0.001,
+            0.003
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_structure",
+      "method": "cnn",
+      "base": "fixed",
+      "fixed": {
+        "mode": "pad",
+        "lr": 0.003,
+        "batch_size": 128
+      },
+      "grids": [
+        {
+          "depth": [
+            2,
+            3
+          ],
+          "pool_size": [
+            4,
+            8
+          ],
+          "dropout": [
+            0,
+            0.25
+          ],
+          "weight_decay": [
+            0,
+            0.0001
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_width",
+      "method": "cnn",
+      "base": "best",
+      "grids": [
+        {
+          "hidden_size": [
+            32,
+            64,
+            128
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_optimizers",
+      "method": "cnn",
+      "base": "best",
+      "grids": [
+        {
+          "optimizer": [
+            "adam"
+          ],
+          "lr": [
+            0.001,
+            0.003
+          ]
+        },
+        {
+          "optimizer": [
+            "adamw"
+          ],
+          "weight_decay": [
+            0.0001
+          ],
+          "lr": [
+            0.001,
+            0.003
+          ]
+        },
+        {
+          "optimizer": [
+            "sgd"
+          ],
+          "momentum": [
+            0.9
+          ],
+          "lr": [
+            0.01,
+            0.03,
+            0.1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_regularization",
+      "method": "cnn",
+      "base": "best",
+      "grids": [
+        {
+          "dropout": [
+            0,
+            0.25
+          ],
+          "weight_decay": [
+            0,
+            0.0001
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_preprocessing",
+      "method": "cnn",
+      "base": "best",
+      "grids": [
+        {
+          "mode": [
+            "resize",
+            "pad",
+            "stretch"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cnn_batch",
+      "method": "cnn",
+      "base": "best",
+      "grids": [
+        {
+          "batch_size": [
+            32,
+            128
+          ]
+        }
+      ]
+    },
+    {
+      "name": "svm_features",
+      "method": "svm",
+      "base": "fixed",
+      "grids": [
+        {
+          "feature": [
+            "pixels",
+            "hog"
+          ],
+          "mode": [
+            "resize",
+            "pad",
+            "stretch"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "svm_hyperparameters",
+      "method": "svm",
+      "base": "fixed",
+      "grids": [
+        {
+          "feature": [
+            "hog"
+          ],
+          "mode": [
+            "resize",
+            "pad",
+            "stretch"
+          ],
+          "hog_cell_size": [
+            8,
+            4
+          ],
+          "loss": [
+            "hinge",
+            "squared_hinge"
+          ],
+          "C": [
+            0.1,
+            1,
+            10,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "name": "svm_optimizers",
+      "method": "svm",
+      "base": "best",
+      "grids": [
+        {
+          "optimizer": [
+            "adam"
+          ],
+          "lr": [
+            0.003,
+            0.01,
+            0.03
+          ]
+        },
+        {
+          "optimizer": [
+            "sgd"
+          ],
+          "momentum": [
+            0.9
+          ],
+          "lr": [
+            1e-05,
+            0.0001,
+            0.001,
+            0.01
+          ]
+        },
+        {
+          "optimizer": [
+            "lbfgs"
+          ],
+          "loss": [
+            "squared_hinge"
+          ],
+          "lr": [
+            1
+          ],
+          "epochs": [
+            15
+          ]
+        }
+      ]
+    }
+  ]
+}

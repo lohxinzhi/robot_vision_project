@@ -1,0 +1,11 @@
+name: robot_vision
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12.3
+  - numpy=1.26.4
+  - matplotlib
+  - opencv=4.10.0  # Provides the cv2 Python module.
+  - notebook
+  - ipykernel

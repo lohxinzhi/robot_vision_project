@@ -1,0 +1,5 @@
+{
+  "source": "iterations/c100",
+  "method": "svm",
+  "note": "Evaluated model evidence; unified selection uses validation trials."
+}

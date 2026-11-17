@@ -1,0 +1,147 @@
+\topic{Task 7 -- dataset and evaluation protocol}
+The dataset contains 7,112 grayscale $128\times128$ character images, with 1,016 images in each of seven classes. The class order is 0, 4, 7, 8, A, D and H. Class images are loaded from their subfolders. The chip bitmap supplies the character-recognition application.
+\begin{center}\begin{tabular}{lrrrr}\toprule
+Class & Inner train & Validation & Development & Test\\\midrule
+0 & 610 & 152 & 762 & 254\\
+4 & 610 & 152 & 762 & 254\\
+7 & 610 & 152 & 762 & 254\\
+8 & 610 & 152 & 762 & 254\\
+A & 610 & 152 & 762 & 254\\
+D & 610 & 152 & 762 & 254\\
+H & 610 & 152 & 762 & 254\\\midrule
+Total & 4270 & 1064 & 5334 & 1778\\\bottomrule
+\end{tabular}\end{center}
+Development comprises the required 75\% and test comprises 25\%. Development is internally divided into training and validation portions. Following configuration selection, each selected model is initialized again and fitted on all 5,334 development images.
+
+Direct comparison of decoded grayscale dimensions and pixel bytes identifies 5,850 unique arrays and 651 duplicate groups, with 1,262 additional copies. Whole exact-duplicate groups stay within a single partition. The manifest records zero cross-partition exact-duplicate groups. The seed for partitioning and the main configuration search is 5411. The data loader reads the image paths and partition assignments from the manifest. Related fonts and near-duplicate images can span partitions because font-family identifiers are unavailable.
+
+The chip bitmap supplies feedback for image-processing development. Classifier fitting uses the class-image dataset. The shared test partition and chip example had been observed during project development. The reported measurements describe the saved split and the supplied chip example.
+
+\topic{Task 7 -- shared parameter search and selection}
+The implementation combines architecture, preprocessing, regularization, feature and optimization comparisons within one experiment registry. Candidate values are declared in \path{task7/search_space.json}. The registry contains 95 trial records, all using seed 5411. One main-seed SVM trial encounters a nonfinite loss and is recorded as failed.
+
+For each successful trial, the validation score selects the earliest epoch attaining its highest accuracy. Final selection compares configurations using their validation accuracy at seed 5411, with ties resolved by fewer learned parameters and then an earlier best epoch. The selected trial's best epoch supplies the development-refit budget. The selected configuration is frozen before its final refit and test evaluation.
+
+The search proceeds through groups. Later groups can start from the strongest recorded main-seed configuration and vary specified factors. The appendix lists every record with its settings, seed, selected epoch and validation score. The table below records the selected configurations.
+\input{tables/selection}
+The selected CNN has a 32-unit hidden layer and is refitted for nine epochs. The selected SVM uses Adam at learning rate 0.03 and is refitted for nine epochs. The final checkpoint class order and configuration are saved with its weights.
+\review{Explain the group's reasons for the investigated parameter ranges and the validation-based selection procedure. Use the complete records when interpreting small score differences.}
+
+\topic{Task 7 -- input normalization}
+All classifier inputs are $32\times32$ float32 arrays in $[0,1]$, with bright character foreground. The three investigated modes use bilinear interpolation.
+\begin{itemize}
+\item \texttt{resize} inverts the grayscale image and resizes the complete image.
+\item \texttt{pad} crops around inverted intensity values above 51, centers the crop on a square canvas, adds a per-side margin of 12\% of the longer side with a minimum of two pixels, and resizes.
+\item \texttt{stretch} uses the same intensity-based crop and resizes the cropped rectangle directly to $32\times32$.
+\end{itemize}
+\fig{preprocessing_examples}{.55}{Training-image examples for complete-image resize, square padding and cropped stretch. Each row corresponds to one class.}
+Both selected classifiers use \texttt{stretch}. Chip glyphs are first represented as dark foreground on white backgrounds, then passed through the normalization recorded in their checkpoints.
+
+\topic{Subtask 7-1 -- selected CNN and architecture comparison}
+\begin{center}\begin{tabularx}{\linewidth}{@{}lXl@{}}\toprule
+Stage & Operation & Output shape\\\midrule
+Input & Normalized grayscale glyph & $1\times32\times32$\\
+1 & Conv $3\times3$, 16 channels, ReLU, max pool 2 & $16\times16\times16$\\
+2 & Conv $3\times3$, 32 channels, ReLU, max pool 2 & $32\times8\times8$\\
+Pooling & Adaptive average pool to $8\times8$ & $32\times8\times8$\\
+Dense & Flatten, linear 2048 to 32, ReLU & 32\\
+Output & Linear 32 to 7 logits & 7\\\bottomrule
+\end{tabularx}\end{center}
+The selected CNN has 70,599 learned parameters. All convolutions use padding one. Cross-entropy is minimized with Adam, learning rate 0.003 and batch size 32. The selected dropout and weight-decay values are both zero. Training uses CPU execution with four threads.
+
+The architecture investigation compares convolution depths two and three, average-pooling widths four and eight, and the four combinations of dropout 0 or 0.25 and weight decay 0 or $10^{-4}$. The table holds preprocessing at \texttt{pad}, hidden width at 64, Adam learning rate at 0.003 and batch size at 128.
+\input{tables/cnn_structure}
+The fully connected input depends on both the final convolutional channel count and the pooling grid. The investigated input widths are 512, 1024, 2048 and 4096.
+
+\topic{Subtask 7-1 -- hidden width, regularization and preprocessing}
+The hidden-width comparison uses depth two, an $8\times8$ pooling grid, \texttt{stretch}, Adam learning rate 0.003 and batch size 32. Dropout and weight decay are zero.
+\input{tables/cnn_width}
+Hidden widths 32 and 128 attain the same highest validation accuracy. The tie is resolved by the smaller parameter count, selecting hidden width 32 and its best epoch, nine.
+
+Regularization is also compared around the 32-unit hidden-layer configuration, with the other settings fixed.
+\input{tables/cnn_regularization}
+The final selected configuration uses zero dropout and zero weight decay. The records describe the investigated dataset, training budget and validation partition.
+
+The preprocessing group compares \texttt{resize}, \texttt{pad} and \texttt{stretch}, and a separate batch-size group compares 32 and 128. Their complete settings and scores appear in the appendix. Changing these factors also changes the normalized geometry or the sequence of parameter updates.
+\input{tables/cnn_preprocessing}
+\review{Interpret the parameter-count and validation measurements for the investigated CNNs. Explain the group's choice of model capacity and regularization using the controlled comparisons at seed 5411.}
+
+\topic{Subtask 7-1 -- optimization and learning histories}
+Adam, AdamW and momentum SGD are compared around the selected depth, pooling, hidden width and preprocessing. AdamW uses weight decay $10^{-4}$. SGD uses momentum 0.9. Each optimizer is evaluated at the learning rates shown below.
+\input{tables/cnn_optimizers}
+\fig{cnn_optimizer_comparison}{.30}{Recorded CNN validation accuracy by optimizer and learning rate. The complete configurations accompany the experiment records.}
+\fig{cnn_learning_curves}{.30}{Training cross-entropy and validation accuracy for the selected CNN configuration at seed 5411.}
+
+\topic{Subtask 7-2 -- handwritten HOG and margin classifier}
+HOG is implemented using NumPy. Image gradients yield magnitude and unsigned orientation. Each cell accumulates nine bins over $[0,\pi)$ with interpolation between neighboring orientation bins. Overlapping $2\times2$-cell blocks undergo L2 normalization, clipping at 0.2 and renormalization. Pixel votes are assigned to their spatial cell.
+
+For a $32\times32$ glyph, $8\times8$-pixel cells yield $3\times3$ blocks and $3\times3\times4\times9=324$ features. The $4\times4$-pixel cells yield $7\times7\times4\times9=1764$ features. Flattened pixels supply a 1,024-dimensional comparison.
+
+Seven linear one-vs-rest functions produce scores $s_c=w_c^T\phi(x)+b_c$. The margin objective is
+\[
+L=\frac12\sum_c\|w_c\|^2+
+\frac{C}{N}\sum_i\sum_c\max(0,1-y_{ic}s_c(x_i))^p,
+\]
+where $y_{ic}=+1$ for the correct class and $-1$ for the remaining classes. The investigated exponents are $p=1$ for hinge loss and $p=2$ for squared-hinge loss. Biases are unregularized. The largest score determines the predicted class.
+
+The selected model uses 1,764-dimensional HOG, squared-hinge loss, $C=100$, \texttt{stretch}, Adam learning rate 0.03 and batch size 128. It has 12,355 learned parameters and is refitted on development data for nine epochs.
+\review{Explain the group's choice of a linear margin classifier and the role of orientation histograms in representing character shapes. Relate the margin objective to the relevant course material.}
+
+\topic{Subtask 7-2 -- features, preprocessing and margin parameters}
+The feature comparison fixes squared-hinge loss, $C=10$, Adam learning rate 0.01 and batch size 128. HOG uses eight-pixel cells in this table.
+\input{tables/svm_features}
+The larger margin-parameter group crosses three preprocessing modes, two HOG cell widths, two loss definitions and four $C$ values. All 48 configurations appear in the appendix. The subset below fixes \texttt{stretch}, four-pixel HOG cells, Adam learning rate 0.01 and batch size 128.
+\input{tables/svm_loss}
+These measurements provide comparisons within a fixed feature representation and training procedure. The learning rate is subsequently investigated in the optimizer group.
+
+\topic{Subtask 7-2 -- optimization comparison}
+The optimizer group fixes \texttt{stretch}, four-pixel HOG cells, squared-hinge loss and $C=100$. Adam and momentum SGD use minibatches of 128. LBFGS uses the full inner-training partition, with up to ten quasi-Newton iterations and a strong-Wolfe line search per recorded outer epoch. Its outer-epoch budget is fifteen.
+\input{tables/svm_optimizers}
+\fig{svm_optimizer_comparison}{.40}{Recorded SVM validation accuracy by optimizer and learning rate. The SGD trial at learning rate 0.01 is recorded as numerically failed.}
+Epochs have optimizer-specific computational meaning. Fitting times accompany the score records. The selected SVM configuration maximizes validation accuracy at seed 5411.
+
+\topic{Subtask 7-3 -- test effectiveness}
+Accuracy is the fraction of correct test labels. Precision and recall are computed per class, and macro F1 averages the seven class F1 scores. Both selected classifiers are evaluated on the same 1,778 test images.
+\input{tables/performance}
+The selected CNN has seven fewer test errors, corresponding to approximately 0.39 percentage points on this partition. Each selected method is refitted on development data at seed 5411 for its selected nine-epoch budget.
+\input{tables/per_class}
+CNN makes two H-to-A errors. SVM makes seven H-class errors, consisting of one H-to-4, two H-to-7 and four H-to-A errors. These counts are obtained from the saved test confusion matrices.
+\review{Discuss the observed class confusions and the eight-error difference using the group's interpretation of the features and trained models. Address the evaluation partition and the range of supported classes.}
+
+\topic{Subtask 7-3 -- test confusion matrices}
+\fig{cnn_confusion}{.39}{Selected CNN confusion matrix. Rows represent true classes and columns represent predicted classes.}
+\fig{svm_confusion}{.39}{Selected HOG--SVM confusion matrix on the same test images.}
+
+\topic{Subtask 7-3 -- efficiency}
+\input{tables/efficiency}
+Model inference timing uses a four-thread CPU, one warm-up pass and the median of five full-test passes. File decoding, chip segmentation and image normalization are outside the timed interval. CNN model timing includes its learned feature extraction. SVM also has a feature-plus-model measurement covering handwritten HOG extraction from normalized arrays.
+
+The refit measurement covers fitting the selected configuration on all development images. The trial registry separately records the preceding search fits and their histories. Checkpoint byte counts include serialization metadata.
+
+The selected CNN records model inference of approximately 0.07695 ms per image. HOG extraction plus the selected SVM records approximately 0.55789 ms per image. The linear SVM score computation accounts for approximately 0.00105 ms per image within that pipeline. These measurements characterize this implementation and recorded runtime.
+\review{Compare effectiveness, parameter count, fitting time, model inference and feature extraction for the intended application. Specify the timing scope used in each comparison.}
+
+\topic{Chip recognition -- Task 6 masks and further image processing}
+The saved CNN and SVM classifiers are applied to two character-input cases. Both use the recorded checkpoint-specific $32\times32$ normalization and the same classifier weights. Each extraction method is evaluated under 4-connectivity and 8-connectivity.
+
+\textbf{Case 1. Task 6 binary character masks.} The reviewed Task 6 procedure uses a $3\times3$ mean, a $31\times31$ local mean with offset 4, and a $5\times5$ binary median. Connected-component labeling retains regions with area at least 500 and orders them from left to right. Each retained component directly supplies its binary character mask to the classifier.
+
+\textbf{Case 2. Further grayscale median filtering and mask refinement.} The chip grayscale ROI is processed using the applied settings in \path{task7/chip_preprocessing.json}.
+\begin{enumerate}
+\item Locate characters using a $3\times3$ mean, a $31\times31$ local mean with offset 2, a $5\times5$ binary median and the 500-pixel minimum component area.
+\item Prepare a smoother recognition mask using a $13\times13$ grayscale median, a $3\times3$ mean, a $31\times31$ local mean with offset 2 and a $5\times5$ binary median.
+\item Expand each located box by two pixels, clipped to the ROI. Retain the largest connected region inside each window from the smoother recognition mask.
+\item Normalize the extracted glyphs and apply the saved CNN and SVM.
+\end{enumerate}
+The same settings apply to every position and both classifiers. The reference \texttt{HD44780A00} scores the sequence after prediction.
+
+The course basis is averaging in Chapter 3, Image Preprocessing Part 2, p. 26, median filtering on pp. 31--34, local thresholding in Chapter 4, Segmentation Part 1, p. 16, connectivity and two-pass labeling on pp. 31--34, and region-area measurement on pp. 39--40. The two-stage sequence, largest-region rule and numerical parameters are project implementation choices.
+
+\topic{Chip recognition -- two-case results}
+\input{tables/chip_preprocessing}
+The numbers 4 and 8 in each table cell identify the connectivity definition. Both cases retain ten characters under either definition.
+
+The Task 6 masks give CNN output \texttt{H044780A00}, with D classified as 0, and SVM output \texttt{8D44780A00}, with H classified as 8. Each classifier has nine correct positions, giving 90\% position accuracy. Further grayscale median filtering, local thresholding and character-window refinement give \texttt{HD44780A00} for both classifiers, with 100\% position accuracy.
+\fig{chip_preprocessing_comparison}{.38}{Top row shows Task 6 binary characters. Bottom row shows further processed masks. Titles record each classifier's prediction for the position.}
+The chip image supplied development feedback for the image-processing settings. The chip score covers its ten characters. The classifier test scores describe the supplied character-image partition.
+\review{Explain the observed changes in H and D and relate the extracted masks to the two classifiers' predictions.}

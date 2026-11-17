@@ -1,0 +1,126 @@
+{
+  "config": {
+    "mode": "pad",
+    "optimizer": "adam",
+    "batch_size": 128,
+    "shuffle_seed": 5411,
+    "lr": 0.003,
+    "epochs": 20,
+    "depth": 2,
+    "pool_size": 4,
+    "hidden_size": 64,
+    "dropout": 0.25,
+    "weight_decay": 0.0001
+  },
+  "best_epoch": 19,
+  "parameters": 38087,
+  "fc_input": 512,
+  "validation_accuracy": 0.9896616541353384,
+  "fit_seconds": 19.37804327000049,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 1.2101668837478066,
+      "validation_accuracy": 0.8843984962406015
+    },
+    {
+      "epoch": 2,
+      "loss": 0.32509691596589546,
+      "validation_accuracy": 0.9210526315789473
+    },
+    {
+      "epoch": 3,
+      "loss": 0.2109780077213984,
+      "validation_accuracy": 0.9483082706766918
+    },
+    {
+      "epoch": 4,
+      "loss": 0.1709307443621008,
+      "validation_accuracy": 0.9473684210526315
+    },
+    {
+      "epoch": 5,
+      "loss": 0.15005576764462425,
+      "validation_accuracy": 0.9699248120300752
+    },
+    {
+      "epoch": 6,
+      "loss": 0.1110284183183096,
+      "validation_accuracy": 0.9699248120300752
+    },
+    {
+      "epoch": 7,
+      "loss": 0.10320817066020653,
+      "validation_accuracy": 0.9718045112781954
+    },
+    {
+      "epoch": 8,
+      "loss": 0.08865275231541181,
+      "validation_accuracy": 0.9708646616541353
+    },
+    {
+      "epoch": 9,
+      "loss": 0.08241960138640862,
+      "validation_accuracy": 0.9765037593984962
+    },
+    {
+      "epoch": 10,
+      "loss": 0.07233821771323541,
+      "validation_accuracy": 0.9783834586466166
+    },
+    {
+      "epoch": 11,
+      "loss": 0.0679817888562936,
+      "validation_accuracy": 0.9755639097744361
+    },
+    {
+      "epoch": 12,
+      "loss": 0.06047101996018959,
+      "validation_accuracy": 0.974624060150376
+    },
+    {
+      "epoch": 13,
+      "loss": 0.0502894254318445,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 14,
+      "loss": 0.046606107734021594,
+      "validation_accuracy": 0.9840225563909775
+    },
+    {
+      "epoch": 15,
+      "loss": 0.037035711667123106,
+      "validation_accuracy": 0.9840225563909775
+    },
+    {
+      "epoch": 16,
+      "loss": 0.03354562582749114,
+      "validation_accuracy": 0.9830827067669173
+    },
+    {
+      "epoch": 17,
+      "loss": 0.043770749945481434,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 18,
+      "loss": 0.03406509783214931,
+      "validation_accuracy": 0.9859022556390977
+    },
+    {
+      "epoch": 19,
+      "loss": 0.03148323567976752,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 20,
+      "loss": 0.027071210845816332,
+      "validation_accuracy": 0.9840225563909775
+    }
+  ],
+  "id": "cnn_393a667e3997",
+  "method": "cnn",
+  "seed": 5411,
+  "provenance": "same manifest, fitting implementation, seed and independent batch-order RNG"
+}

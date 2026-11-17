@@ -1,0 +1,126 @@
+{
+  "config": {
+    "mode": "stretch",
+    "optimizer": "adam",
+    "batch_size": 32,
+    "shuffle_seed": 5411,
+    "lr": 0.003,
+    "epochs": 20,
+    "depth": 2,
+    "pool_size": 8,
+    "hidden_size": 64,
+    "dropout": 0.0,
+    "weight_decay": 0.0
+  },
+  "best_epoch": 7,
+  "parameters": 136391,
+  "fc_input": 2048,
+  "validation_accuracy": 0.9971804511278195,
+  "fit_seconds": 18.64806236200093,
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.27251714336221267,
+      "validation_accuracy": 0.9736842105263158
+    },
+    {
+      "epoch": 2,
+      "loss": 0.057306368603530305,
+      "validation_accuracy": 0.9802631578947368
+    },
+    {
+      "epoch": 3,
+      "loss": 0.02928102340612482,
+      "validation_accuracy": 0.9877819548872181
+    },
+    {
+      "epoch": 4,
+      "loss": 0.023713612242326994,
+      "validation_accuracy": 0.9896616541353384
+    },
+    {
+      "epoch": 5,
+      "loss": 0.006205006635475078,
+      "validation_accuracy": 0.9943609022556391
+    },
+    {
+      "epoch": 6,
+      "loss": 0.013401405108300315,
+      "validation_accuracy": 0.9877819548872181
+    },
+    {
+      "epoch": 7,
+      "loss": 0.005703071114260635,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 8,
+      "loss": 0.001145779895741555,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 9,
+      "loss": 0.00015209924891445152,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 10,
+      "loss": 8.740379031645444e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 11,
+      "loss": 6.412399256236576e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 12,
+      "loss": 5.007321586278034e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 13,
+      "loss": 4.066965161628432e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 14,
+      "loss": 3.3769889608914496e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 15,
+      "loss": 2.8494547312109383e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 16,
+      "loss": 2.4437078894987575e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 17,
+      "loss": 2.11431017218906e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 18,
+      "loss": 1.872044102529777e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 19,
+      "loss": 1.649223517813971e-05,
+      "validation_accuracy": 0.9971804511278195
+    },
+    {
+      "epoch": 20,
+      "loss": 1.469165575854781e-05,
+      "validation_accuracy": 0.9971804511278195
+    }
+  ],
+  "id": "cnn_ef779e46a8e9",
+  "method": "cnn",
+  "seed": 5411,
+  "provenance": "same manifest, fitting implementation, seed and independent batch-order RNG"
+}

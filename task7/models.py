@@ -5,15 +5,25 @@ from torch import nn
 
 
 class CharacterCNN(nn.Module):
-    def __init__(self, classes):
+    def __init__(self, classes, depth=3, pool_size=4, dropout=0.25, hidden_size=64):
         super().__init__()
-        self.layers = nn.Sequential(
+        if depth not in (2, 3) or pool_size not in (4, 8):
+            raise ValueError("depth must be 2 or 3 and pool_size must be 4 or 8")
+        layers = [
             nn.Conv2d(1, 16, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
             nn.Conv2d(16, 32, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),
-            nn.Conv2d(32, 64, 3, padding=1), nn.ReLU(), nn.AdaptiveAvgPool2d((4, 4)),
-            nn.Flatten(), nn.Linear(1024, 64), nn.ReLU(), nn.Dropout(0.25),
-            nn.Linear(64, classes),
-        )
+        ]
+        channels = 32
+        if depth == 3:
+            layers.extend([nn.Conv2d(32, 64, 3, padding=1), nn.ReLU()])
+            channels = 64
+        self.fc_input = channels * pool_size * pool_size
+        layers.extend([
+            nn.AdaptiveAvgPool2d((pool_size, pool_size)),
+            nn.Flatten(), nn.Linear(self.fc_input, hidden_size), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(hidden_size, classes),
+        ])
+        self.layers = nn.Sequential(*layers)
 
     def forward(self, images):
         return self.layers(images)
@@ -30,9 +40,17 @@ class LinearSVM(nn.Module):
 
 def squared_hinge_loss(scores, labels, model, regularization):
     """One-vs-rest linear SVM objective with unregularized intercepts."""
+    return margin_loss(scores, labels, model, regularization, squared=True)
+
+
+def margin_loss(scores, labels, model, regularization, squared=False):
+    """Hand-written one-vs-rest hinge or squared-hinge objective."""
     targets = -torch.ones_like(scores)
     targets.scatter_(1, labels[:, None], 1)
-    penalty = torch.relu(1 - targets * scores).square().sum(1).mean()
+    margins = torch.relu(1 - targets * scores)
+    if squared:
+        margins = margins.square()
+    penalty = margins.sum(1).mean()
     return 0.5 * model.linear.weight.square().sum() + regularization * penalty
 
 

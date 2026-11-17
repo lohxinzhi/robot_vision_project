@@ -1,0 +1,61 @@
+\topic{Step-by-step execution guide}
+The repository contains \texttt{task1-6/}, \texttt{task7/}, \texttt{report/} and a root README. Commands below start from the repository root. Conda must be installed and accessible.
+
+\textbf{1. Tasks 1--6.}
+\begin{verbatim}
+cd task1-6
+conda env create -f environment.yml
+conda activate robot_vision
+python -m notebook tasks.ipynb
+\end{verbatim}
+Select the environment's Python kernel and use Run All. The notebook reads its local \path{Test_Image_2026.bmp}. Its supporting modules and filter experiments are in the same folder. The image and reviewed algorithm implementations accompany the notebook. The handwritten filters can take several minutes.
+
+\textbf{2. Task 7 environment.} Return to the repository root, then
+\begin{verbatim}
+cd task7
+conda env create -f environment.yml
+conda activate robot-vision-task7
+\end{verbatim}
+The folder includes the complete dataset, selected models, configuration files and result records. It supports independent use after copying the folder elsewhere.
+
+\textbf{3. Chip inference.} From \texttt{task7/}, run
+\begin{verbatim}
+python recognize_chip.py
+\end{verbatim}
+Default paths are resolved relative to the script. It loads the selected checkpoints and \texttt{chip\_preprocessing.json}, then writes per-connectivity predictions, boxes and figures to \texttt{results/}. Both selected classifiers produce \texttt{HD44780A00} under each connectivity setting.
+
+\textbf{4. Image-processing comparisons.} From \texttt{task7/}, run
+\begin{verbatim}
+python compare_chip_preprocessing.py
+\end{verbatim}
+This compares Task 6 binary character masks with further image processing under both connectivity definitions. Its JSON records the settings, image filename, boxes and predictions. CSV, Markdown, LaTeX and a before/after figure accompany the comparisons.
+
+\topic{Execution guide -- training and report}
+\textbf{5. Classifier study.} From \texttt{task7/}, run
+\begin{verbatim}
+python prepare_data.py
+python train.py
+python recognize_chip.py
+python summarize_results.py
+\end{verbatim}
+The training entry point runs or resumes the search in \texttt{search\_space.json}, selects each method using validation accuracy at seed 5411, refits the selected pair and evaluates them. Completed trials are reused. Runtime-dependent timing values can change when fits are repeated.
+
+Individual groups and phases are accessible through arguments.
+\begin{verbatim}
+python train.py --phase search --group cnn_optimizers
+python train.py --phase search --group svm_optimizers
+python train.py --phase confirm
+python train.py --phase final
+\end{verbatim}
+The complete configuration and output arguments are documented in \path{task7/README.md}. The optional \texttt{refine\_svm.py} entry point registers an additional SVM trial in the same experiment registry.
+
+\textbf{6. Report generation.} Return to the repository root, then
+\begin{verbatim}
+python report/export_figures.py
+bash report/build.sh
+\end{verbatim}
+The exporter uses Python's standard library. It extracts saved notebook figures, copies Task 7 figures and generates numerical tables from the experiment JSON files. Save the notebook after execution before exporting its updated figures. The report's editable task sections are in \path{report/sections/}. Generated tables are in \path{report/tables/}. The compiler produces \path{report/main.pdf} using Arial and Tectonic or XeLaTeX.
+
+The recorded Task 7 runtime uses Python 3.10.20, NumPy 2.2.6, Pillow 12.3.0, Matplotlib 3.10.9 and PyTorch 2.13.0+cu130 with CPU execution and four threads. The Tasks 1--6 environment declares Python 3.12.3, NumPy 1.26.4, OpenCV 4.10.0 and the notebook interface.
+
+\textbf{7. Submission.} Complete member information and the group's discussion, review the compiled PDF and package the report and implementation code as \texttt{Group\_33.zip}. The brief gives 20 November 2026 at 23:59 Singapore time as the submission deadline.

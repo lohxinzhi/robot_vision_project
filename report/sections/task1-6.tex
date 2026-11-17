@@ -1,0 +1,87 @@
+\topic{Task 1 -- original image and contrast methods}
+\fig{original}{.30}{Saved original bitmap display and intensity histogram.}
+The notebook converts the OpenCV BGR image to grayscale. It compares linear contrast stretching with bounds 70 and 170, piecewise stretching through $(70,20)$ and $(170,240)$, thresholds 100 and 110, global histogram equalization, and CLAHE with clip limit 1.2 and a $4\times4$ tile grid.
+
+Linear stretching maps the selected interval to the display range and clips intensities outside it. The notebook's piecewise transform provides a different mapping for the lower, middle and upper input ranges. Thresholding returns 255 for values at or above the threshold and zero otherwise. Histogram equalization is delegated to OpenCV, as is CLAHE.
+
+The saved notebook observations state that thresholding increases visible foreground/background separation while also exposing background texture. Raising the threshold from 100 to 110 reduces visible background responses on this image. The notebook describes contrast stretching as a visual compromise and notes that global equalization amplifies background variation. These are qualitative observations for this bitmap.
+\review{Explain which contrast display the group prefers, identify the relevant visible regions, and distinguish appearance from downstream segmentation performance.}
+\topic{Task 1 -- intermediate contrast results}
+\fig{contrast}{.83}{Saved comparison of seven contrast settings with their corresponding histograms. Settings and labels reproduce the notebook output.}
+\topic{Task 2 -- averaging filter}
+For an odd window width $k$, the manually implemented filter computes
+\[
+I_k(x,y)=\operatorname{round}\left(\frac{1}{k^2}\sum_{u=-r}^{r}\sum_{v=-r}^{r}I(x+u,y+v)\right),\qquad r=(k-1)/2.
+\]
+The handwritten path pads using edge replication, computes a mean at each pixel, rounds and clips to the 8-bit range. The optional OpenCV path uses constant padding. The notebook's main averaging comparison uses the handwritten path. Boundary behavior therefore depends on the selected implementation.
+
+The investigated sizes are $1,3,5,7,9,11,13,15$. The required $5\times5$ case is included. The $1\times1$ result provides the unchanged grayscale reference.
+\fig{average}{.50}{Saved averaging-filter comparison, including the required $5\times5$ result.}
+The notebook records a visual preference for $7\times7$ as a balance between smoothing and sharpness. It does not measure noise statistics or identify the noise distribution from ground truth.
+\topic{Task 2 -- square and cross median comparisons}
+The square median uses all $k^2$ window pixels. The cross median uses the central row and column, with the center counted once, giving $2k-1$ samples. Both compare odd support widths from 1 to 15. The square results use OpenCV; the cross is implemented by selecting pixels with a Boolean mask.
+\fig{square_median}{.31}{Saved square-median comparison.}
+\fig{cross_median}{.31}{Saved cross-median comparison.}
+\review{Use visible stroke and background changes to discuss the effect of support shape and size. The notebook's description of ring-like texture is a visual observation, and does not establish a noise model.}
+\topic{Task 2 -- combined processing experiments}
+The notebook additionally applies averaging to the $13\times13$ cross-median image. It displays a $5\times5$ average followed by contrast stretching from 100 to 150, and the same filtered image followed by threshold 110. A separate trial thresholds first and then applies a $15\times15$ cross median.
+\fig{combined_stretch}{.22}{Cross median 13, average 5 and contrast stretch 100--150.}
+\fig{combined_threshold}{.22}{Cross median 13, average 5 and threshold 110.}
+\fig{threshold_median}{.22}{Threshold 110 followed by cross median 15.}
+\review{Describe the changes observed when the processing order changes. Explain the group's eventual choice using these results.}
+\topic{Tasks 3--4 -- crop and binary conversion}
+The ROI is recorded as $(x,y,w,h)=(36,202,912,136)$ in zero-based pixel coordinates. NumPy extracts rows \texttt{202:338} and columns \texttt{36:948}. This manual ROI contains the requested second line.
+\fig{crop}{.19}{Saved grayscale ROI and histogram.}
+Task 4 thresholds this grayscale crop at 110 and applies cross-median filters of width 23 and 13. Foreground pixels have value 255. The width-23 result, \texttt{median\_sub}, is passed to Task 5.
+\fig{task4_binary}{.19}{Saved Task 4 grayscale and threshold-110 binary display.}
+\fig{task4_median}{.19}{Saved Task 4 cross-median comparison, width 23 on the first row and width 13 on the second row.}
+\topic{Task 5 -- morphological character outlines}
+Let $B$ denote the foreground set and let $S$ be a $3\times3$ square structuring element. The inner outline is
+\[
+\partial B=B\setminus(B\ominus S).
+\]
+The implementation interprets every nonzero input as foreground, pads the foreground with zeros, and retains a pixel in the eroded image only if its complete $3\times3$ neighborhood is foreground. The output is 255 at foreground pixels removed by erosion. This includes boundaries surrounding holes, where present in the input.
+\fig{task5_outline}{.37}{Task 4 width-23 cross-median binary and its inner outline, as saved in the notebook.}
+The outline inherits the topology and residual foreground of its input. Finding a boundary does not identify a character class. Its role here is to visualize the edge of the filtered foreground.
+\review{Inspect which holes and stroke edges remain visible. Explain whether the Task 4 filter preserves the details the group considers relevant.}
+\topic{Task 6 -- binary preparation for segmentation}
+Task 6 returns to the grayscale ROI. The stages are a $3\times3$ average, a $31\times31$ local-mean estimate, local thresholding with offset 4, and a $5\times5$ square median. In the implementation,
+\[
+B(x,y)=255\,\mathbf{1}\{I_s(x,y)\geq\mu_{31}(x,y)+4\}.
+\]
+The bright foreground is selected relative to the surrounding mean. The parameters are fixed for this chip image and are shared by both connectivity experiments.
+\fig{task6_binary}{.45}{Saved grayscale crop, smoothed crop and locally thresholded median-filtered binary.}
+Course references have been checked against the supplied lecture export. Chapter 3, Image Preprocessing Part 2, p. 26 describes averaging and pp. 31--34 describe median filtering. Chapter 4, Segmentation Part 1, p. 16 defines local thresholding using neighborhood properties, including average gray level. Its pp. 31--34 describe connectivity and two-pass labeling, and pp. 39--40 describe region area.
+\review{Explain the choice of local intensity comparison and comment on any residual attached background visible in the resulting glyphs.}
+\topic{Task 6 -- two-pass connected components}
+For 4-connectivity, the first raster scan examines the already visited left and upper neighbors. For 8-connectivity it also examines upper-left and upper-right. A foreground pixel receives a new label if no labeled neighbor exists. Otherwise it receives a neighboring label, and equivalences are recorded when different neighboring labels meet.
+
+The second pass resolves the equivalences and accumulates area and bounding coordinates for each region. The component list retains regions with at least 500 pixels, then orders them left to right. The label image still represents all foreground regions. Each retained character box is derived from one component.
+\begin{center}\begin{tikzpicture}[node distance=5mm,every node/.style={draw,rounded corners,align=center,text width=11cm,minimum height=8mm},>=Stealth]
+\node(a){Choose 4- or 8-neighbor definition};
+\node[below=of a](b){First pass: assign provisional labels and record equivalences};
+\node[below=of b](c){Second pass: resolve labels and compute component statistics};
+\node[below=of c](d){Keep area $\geq500$ and sort by horizontal position};
+\node[below=of d](e){Draw a box for each retained component};
+\foreach \x/\y in {a/b,b/c,c/d,d/e}\draw[->](\x)--(\y);
+\end{tikzpicture}\end{center}
+\begin{center}\begin{tabular}{lrr}\toprule Setting & All regions & Retained regions\\\midrule
+4-connectivity & 138 & 10\\8-connectivity & 138 & 10\\\bottomrule\end{tabular}\end{center}
+A saved diagonal sanity check uses a $3\times3$ identity pattern. It yields three components under 4-connectivity and one under 8-connectivity. Equal counts on the chip are therefore compatible with distinct neighborhood definitions.
+\topic{Task 6 -- bounding boxes and character labels}
+\fig{task6_boxes}{.39}{Saved 4- and 8-connectivity results. Box numbers indicate left-to-right segmentation positions.}
+The saved component records agree across both connectivity settings. Coordinates below are relative to the ROI.
+\begin{center}\begin{tabular}{rrrrrr}\toprule Position & $x$ & $y$ & Width & Height & Area\\\midrule
+1 & 24 & 11 & 84 & 121 & 3932 \\
+2 & 116 & 2 & 87 & 134 & 4302 \\
+3 & 206 & 10 & 82 & 126 & 3517 \\
+4 & 296 & 12 & 87 & 116 & 3364 \\
+5 & 387 & 0 & 90 & 128 & 2756 \\
+6 & 469 & 11 & 88 & 117 & 4467 \\
+7 & 559 & 7 & 85 & 124 & 3973 \\
+8 & 646 & 10 & 91 & 117 & 3290 \\
+9 & 731 & 6 & 86 & 122 & 4086 \\
+10 & 824 & 5 & 82 & 124 & 4082 \\
+\bottomrule\end{tabular}\end{center}
+The original image position of a box is obtained by adding 36 to its horizontal coordinate and 202 to its vertical coordinate. Component labels stored internally differ from the positional numbers displayed above.
+\review{Assess the quality of the retained character masks and the sensitivity of the 500-pixel cutoff. The recorded experiment verifies this image and these settings.}
